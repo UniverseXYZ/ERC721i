@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 // Written by Tim Kang <> illestrater
-// Thought innovation by Monstercat
 // Product by universe.xyz
 
 pragma solidity >=0.6.0 <0.8.0;

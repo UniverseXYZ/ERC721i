@@ -11,6 +11,11 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/introspection/ERC165.sol";
 import 'base64-sol/base64.sol';
 
+/* TODO:
+ * Animation URI
+ * Aux functions
+ */
+
 library LibStorage {
   using SafeMath for uint256;
   using Counters for Counters.Counter;
@@ -160,9 +165,30 @@ library LibStorage {
     emit TokenMinted(newTokenId, _tokenData[0], msg.sender, block.timestamp);
   }
 
-  function getTokenCreator(uint256 tokenID) public view returns (address) {
+  function getTokenCreator(uint256 tokenId) public view returns (address) {
     Storage storage ds = libStorage();
-    return ds.tokenData[tokenID].tokenCreator;
+    return ds.tokenData[tokenId].tokenCreator;
+  }
+
+  function updateAsset(uint256 tokenId, string memory asset) external {
+    Storage storage ds = libStorage();
+    require(getTokenCreator(tokenId) == msg.sender, 'Only creator of token can add new asset version');
+    ds.tokenData[tokenId].assets[ds.tokenData[tokenId].assets.length] = asset;
+    ds.tokenData[tokenId].totalVersionCount++;
+    ds.tokenData[tokenId].currentVersion++;
+  }
+
+  function changeVersion(uint256 tokenId, uint256 version) external {
+    Storage storage ds = libStorage();
+    require(version <= ds.tokenData[tokenId].totalVersionCount, 'Out of version bounds');
+    require(version >= 1, 'Out of version bounds');
+    ds.tokenData[tokenId].currentVersion = version;
+  }
+
+  function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) public onlyDAO {
+    Storage storage ds = libStorage();
+    require(ds.tokenData[tokenId].metadata.modifiable[propertyIndex], 'Field not editable');
+    ds.tokenData[tokenId].metadata.value[propertyIndex] = value;
   }
 
   function tokenURI(uint256 tokenId) public view returns (string memory) {

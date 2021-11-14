@@ -63,6 +63,7 @@ contract UniverseSingularity is ERC165, ERC721 {
     LibStorage.Fee[] memory _fees
   ) public returns (uint256) {
     LibStorage.Storage storage ds = LibStorage.libStorage();
+    require(_tokenData.length == 3, 'Invalid parameters');
 
     LibStorage.mintOnChain(_tokenData, _additionalAssets, _metadataValues, _licenseURI, _fees);
 
@@ -70,11 +71,29 @@ contract UniverseSingularity is ERC165, ERC721 {
     _mint(msg.sender, newTokenId);
   }
 
-  function getTokenCreator(uint256 tokenID) public view returns (address) {
-    return LibStorage.libStorage().tokenData[tokenID].tokenCreator;
+  function getTokenCreator(uint256 tokenId) public view returns (address) {
+    require(_exists(tokenId), "Nonexistent token");
+    return LibStorage.libStorage().tokenData[tokenId].tokenCreator;
+  }
+
+  function updateAsset(uint256 tokenId, string memory asset) public {
+    require(_exists(tokenId), "Nonexistent token");
+    LibStorage.updateAsset(tokenId, asset);
+  }
+
+  function changeVersion(uint256 tokenId, uint256 version) public {
+    require(_exists(tokenId), "Nonexistent token");
+    require(ownerOf(tokenId) == msg.sender || getTokenCreator(tokenId) == msg.sender, 'Only creator and owner can change asset');
+    LibStorage.changeVersion(tokenId, version);
+  }
+
+  function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) public {
+    require(_exists(tokenId), "Nonexistent token");
+    LibStorage.updateMetadata(tokenId, propertyIndex, value);
   }
 
   function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    require(_exists(tokenId), "Nonexistent token");
     return LibStorage.tokenURI(tokenId);
   }
 

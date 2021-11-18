@@ -87,57 +87,7 @@ library LibStorage {
   }
 
   function mint(
-    string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [text context], [additional assets], [text context]]
-    string memory _licenseURI,
-    Fee[] memory fees
-  ) external returns (uint256) {
-    require(_assets[0].length == _assets[1].length && _assets[1].length == _assets[2].length && _assets[3].length == _assets[4].length, 'Invalid assets provided');
-    Storage storage ds = libStorage();
-
-    ds._tokenIdCounter.increment();
-    uint256 newTokenId = ds._tokenIdCounter.current();
-
-    string[] memory assets = new string[](_assets[0].length);
-    string[] memory assetBackups = new string[](_assets[0].length);
-
-    for (uint256 i = 0; i < _assets[0].length; i++) {
-      assets[i] = _assets[0][i];
-      assetBackups[i] = _assets[1][i];
-    }
-
-    string[] memory additionalAssets = new string[](_assets[3].length);
-    string[] memory additionalAssetsContext = new string[](_assets[3].length);
-    for (uint256 i = 0; i < _assets[3].length; i++) {
-      additionalAssets[i] = _assets[3][i];
-      additionalAssetsContext[i] = _assets[4][i];
-    }
-
-    ds.tokenData[newTokenId] = TokenData({
-      tokenCreator: msg.sender,
-      isOnChain: false,
-      metadata: Metadata({
-        tokenName: '',
-        tokenDescription: '',
-        name: new string[](0),
-        value: new string[](0),
-        modifiable: new bool[](0),
-        propertyCount: 0
-      }),
-      licenseURI: _licenseURI,
-      assets: assets,
-      assetBackups: assetBackups,
-      additionalAssets: additionalAssets,
-      additionalAssetsContext: additionalAssetsContext,
-      totalVersionCount: 1,
-      currentVersion: 1
-    });
-
-    _registerFees(newTokenId, fees);
-
-    emit TokenMinted(newTokenId, _assets[0][0], msg.sender, block.timestamp);
-  }
-
-  function mintOnChain(
+    bool _isOnChain,
     string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [text context], [additional assets], [text context], [token name, desc]]
     string[][] memory _metadataValues,
     string memory _licenseURI,
@@ -163,29 +113,44 @@ library LibStorage {
       additionalAssetsContext[i] = _assets[4][i];
     }
 
-    string[] memory propertyNames = new string[](_metadataValues.length);
-    string[] memory propertyValues = new string[](_metadataValues.length);
-    bool[] memory modifiables = new bool[](_metadataValues.length);
-    for (uint256 i = 0; i < _metadataValues.length; i++) {
-      propertyNames[i] = _metadataValues[i][0];
-      propertyValues[i] = _metadataValues[i][1];
-      modifiables[i] = (keccak256(abi.encodePacked((_metadataValues[i][2]))) == keccak256(abi.encodePacked(('1')))); // 1 is modifiable, 0 is permanent
-    }
+    Metadata memory metadata;
+    if (_isOnChain) {
+      string[] memory propertyNames = new string[](_metadataValues.length);
+      string[] memory propertyValues = new string[](_metadataValues.length);
+      bool[] memory modifiables = new bool[](_metadataValues.length);
 
-    string[] memory assetData = _assets[5];
-    uint256 propertyCount = _metadataValues.length;
+      for (uint256 i = 0; i < _metadataValues.length; i++) {
+        propertyNames[i] = _metadataValues[i][0];
+        propertyValues[i] = _metadataValues[i][1];
+        modifiables[i] = (keccak256(abi.encodePacked((_metadataValues[i][2]))) == keccak256(abi.encodePacked(('1')))); // 1 is modifiable, 0 is permanent
+      }
 
-    ds.tokenData[newTokenId] = TokenData({
-      tokenCreator: msg.sender,
-      isOnChain: true,
-      metadata: Metadata({
+      string[] memory assetData = _assets[5];
+      uint256 propertyCount = _metadataValues.length;
+
+      metadata = Metadata({
         tokenName: assetData[0],
         tokenDescription: assetData[1],
         name: propertyNames,
         value: propertyValues,
         modifiable: modifiables,
         propertyCount: propertyCount
-      }),
+      });
+    } else {
+      metadata = Metadata({
+        tokenName: '',
+        tokenDescription: '',
+        name: new string[](0),
+        value: new string[](0),
+        modifiable: new bool[](0),
+        propertyCount: 0
+      });
+    }
+
+    ds.tokenData[newTokenId] = TokenData({
+      tokenCreator: msg.sender,
+      isOnChain: _isOnChain,
+      metadata: metadata,
       licenseURI: _licenseURI,
       assets: assets,
       assetBackups: assetBackups,
@@ -197,7 +162,7 @@ library LibStorage {
 
     _registerFees(newTokenId, fees);
 
-    emit TokenMinted(newTokenId, assetData[0], msg.sender, block.timestamp);
+    emit TokenMinted(newTokenId, _assets[0][0], msg.sender, block.timestamp);
   }
 
   function getTokenCreator(uint256 tokenId) public view returns (address) {

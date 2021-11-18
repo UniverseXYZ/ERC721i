@@ -37,24 +37,7 @@ contract UniverseSingularity is ERC165, ERC721 {
   }
 
   function mint(
-    string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [text context], [additional assets], [text context]]
-    string memory _licenseURI,
-    LibStorage.Fee[] memory _fees
-  ) public returns (uint256) {
-    LibStorage.Storage storage ds = LibStorage.libStorage();
-
-    LibStorage.mint(_assets, _licenseURI, _fees);
-
-    uint256 newTokenId = ds._tokenIdCounter.current();
-    _mint(msg.sender, newTokenId);
-  }
-
-  /* tokenData:
-  *  string memory _tokenURI,
-  *  string memory _tokenName,
-  *  string memory _tokenDescription,
-  */
-  function mintOnChain(
+    bool _isOnChain,
     string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [text context], [additional assets], [text context]]
     string[][] memory _metadataValues,
     string memory _licenseURI,
@@ -63,7 +46,7 @@ contract UniverseSingularity is ERC165, ERC721 {
     LibStorage.Storage storage ds = LibStorage.libStorage();
     require(_assets.length == 6, 'Invalid parameters');
 
-    LibStorage.mintOnChain(_assets, _metadataValues, _licenseURI, _fees);
+    LibStorage.mint(_isOnChain, _assets, _metadataValues, _licenseURI, _fees);
 
     uint256 newTokenId = ds._tokenIdCounter.current();
     _mint(msg.sender, newTokenId);

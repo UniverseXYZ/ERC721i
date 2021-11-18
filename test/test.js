@@ -37,7 +37,7 @@ describe("UniverseSingularity Test", async function() {
 
   it("should mint one basic token", async function() {
     const tokenData = metadata.basic;
-    await deployInstance.mint(tokenData.assets, tokenData.licenseURI, tokenData.fees);
+    await deployInstance.mint(tokenData.isOnChain, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees);
   });
 
   it("should return basic tokenURI", async function() {
@@ -47,7 +47,7 @@ describe("UniverseSingularity Test", async function() {
 
   it("should mint one onchain token", async function() {
     const tokenData = metadata.onchain;
-    await deployInstance.mintOnChain(tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees);
+    await deployInstance.mint(tokenData.isOnChain, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees);
   });
 
   it("should return onchain tokenURI", async function() {

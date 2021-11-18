@@ -1,5 +1,6 @@
 {
   "basic": {
+    "isOnChain": false,
     "assets": [
       ["https://arweave.net/firstAsset", "https://arweave.net/secondAsset"],
       ["https://arweave.net/backupAsset", "https://arweave.net/backupAsset"],
@@ -8,10 +9,12 @@
       ["Additional Asset 1", "Additional Asset 2"],
       ["Complex token", "This is the token description of the complex token"]
     ],
+    "metadata": [],
     "licenseURI": "",
     "fees": []
   },
   "onchain": {
+    "isOnChain": true,
     "assets": [
       ["https://arweave.net/firstAsset", "https://arweave.net/secondAsset"],
       ["https://arweave.net/backupAsset", "https://arweave.net/backupAsset"],
@@ -25,6 +28,7 @@
     "fees": []
   },
   "large": {
+    "isOnChain": true,
     "assets": [
       [
         "https://arweave.net/firstAsset",

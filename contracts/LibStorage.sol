@@ -13,7 +13,7 @@ import 'base64-sol/base64.sol';
 
 /* TODO:
  * Animation URI
- * Aux functions
+ * Withdraw ETH
  */
 
 library LibStorage {
@@ -42,9 +42,11 @@ library LibStorage {
     Metadata metadata;
     string licenseURI; // Usage rights for token
     string[] assets; // Each asset in array is a version
+    string[] assetBackups; // Each backup upload can be toggled as main display asset (e.g. IPFS / ARWEAVE)
     uint256 totalVersionCount; // Total number of existing states
     uint256 currentVersion; // Current existing state
     string[] additionalAssets; // Additional assets provided by minter
+    string[] additionalAssetsContext; // Short text context per asset
   }
 
   struct Storage { 
@@ -83,17 +85,30 @@ library LibStorage {
 
   function mint(
     string memory _tokenURI,
-    string[] memory _additionalAssets,
+    string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [text context], [additional assets], [text context]]
     string memory _licenseURI,
     Fee[] memory fees
   ) external returns (uint256) {
+    require(_assets[0].length == _assets[1].length && _assets[1].length == _assets[2].length && _assets[3].length == _assets[4].length, 'Invalid assets provided');
     Storage storage ds = libStorage();
 
     ds._tokenIdCounter.increment();
     uint256 newTokenId = ds._tokenIdCounter.current();
 
-    string[] memory _assets = new string[](1);
-    _assets[0] = _tokenURI;
+    string[] memory assets = new string[](_assets[0].length);
+    string[] memory assetBackups = new string[](_assets[0].length);
+    for (uint256 i = 0; i < _assets.length; i++) {
+      assets[i] = _assets[0][i];
+      assetBackups[i] = _assets[1][i];
+    }
+
+    string[] memory additionalAssets = new string[](_assets[3].length);
+    string[] memory additionalAssetsContext = new string[](_assets[3].length);
+    for (uint256 i = 0; i < _assets[3].length; i++) {
+      additionalAssets[i] = _assets[3][i];
+      additionalAssetsContext[i] = _assets[4][i];
+    }
+
     ds.tokenData[newTokenId] = TokenData({
       tokenCreator: msg.sender,
       isOnChain: false,
@@ -106,10 +121,12 @@ library LibStorage {
         propertyCount: 0
       }),
       licenseURI: _licenseURI,
-      assets: _assets,
+      assets: assets,
+      assetBackups: assetBackups,
+      additionalAssets: additionalAssets,
+      additionalAssetsContext: additionalAssetsContext,
       totalVersionCount: 1,
-      currentVersion: 1,
-      additionalAssets: _additionalAssets
+      currentVersion: 1
     });
 
     _registerFees(newTokenId, fees);
@@ -118,16 +135,30 @@ library LibStorage {
   }
 
   function mintOnChain(
-    string[] memory _tokenData,
-    string[] memory _additionalAssets,
+    string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [text context], [additional assets], [text context], [token name, desc]]
     string[][] memory _metadataValues,
     string memory _licenseURI,
     Fee[] memory fees
   ) external returns (uint256) {
+    require(_assets[0].length == _assets[1].length && _assets[1].length == _assets[2].length && _assets[3].length == _assets[4].length, 'Invalid assets provided');
     Storage storage ds = libStorage();
 
     ds._tokenIdCounter.increment();
     uint256 newTokenId = ds._tokenIdCounter.current();
+
+    string[] memory assets = new string[](_assets[0].length);
+    string[] memory assetBackups = new string[](_assets[0].length);
+    for (uint256 i = 0; i < _assets.length; i++) {
+      assets[i] = _assets[0][i];
+      assetBackups[i] = _assets[1][i];
+    }
+
+    string[] memory additionalAssets = new string[](_assets[3].length);
+    string[] memory additionalAssetsContext = new string[](_assets[3].length);
+    for (uint256 i = 0; i < _assets[3].length; i++) {
+      additionalAssets[i] = _assets[3][i];
+      additionalAssetsContext[i] = _assets[4][i];
+    }
 
     string[] memory propertyNames = new string[](_metadataValues.length);
     string[] memory propertyValues = new string[](_metadataValues.length);
@@ -138,31 +169,42 @@ library LibStorage {
       modifiables[i] = (keccak256(abi.encodePacked((_metadataValues[i][2]))) == keccak256(abi.encodePacked(('1')))); // 1 is modifiable, 0 is permanent
     }
 
-    Metadata memory _metadata = Metadata({
-      tokenName: _tokenData[1],
-      tokenDescription: _tokenData[2],
-      name: propertyNames,
-      value: propertyValues,
-      modifiable: modifiables,
-      propertyCount: _metadataValues.length
-    });
+    // Metadata memory _metadata = Metadata({
+    //   tokenName: _assets[5][0],
+    //   tokenDescription: _assets[5][1],
+    //   name: propertyNames,
+    //   value: propertyValues,
+    //   modifiable: modifiables,
+    //   propertyCount: _metadataValues.length
+    // });
+    string[] memory assetData = _assets[5];
+    uint256 propertyCount = _metadataValues.length;
 
-    string[] memory _assets = new string[](1);
-    _assets[0] = _tokenData[0];
+    // string[] memory _assets = new string[](1); // TEST PUSH
+    // _assets[0] = _tokenData[0];
     ds.tokenData[newTokenId] = TokenData({
       tokenCreator: msg.sender,
       isOnChain: true,
-      metadata: _metadata,
+      metadata: Metadata({
+        tokenName: assetData[0],
+        tokenDescription: assetData[1],
+        name: propertyNames,
+        value: propertyValues,
+        modifiable: modifiables,
+        propertyCount: propertyCount
+      }),
       licenseURI: _licenseURI,
-      assets: _assets,
+      assets: assets,
+      assetBackups: assetBackups,
+      additionalAssets: additionalAssets,
+      additionalAssetsContext: additionalAssetsContext,
       totalVersionCount: 1,
-      currentVersion: 1,
-      additionalAssets: _additionalAssets
+      currentVersion: 1
     });
 
     _registerFees(newTokenId, fees);
 
-    emit TokenMinted(newTokenId, _tokenData[0], msg.sender, block.timestamp);
+    emit TokenMinted(newTokenId, assetData[0], msg.sender, block.timestamp);
   }
 
   function getTokenCreator(uint256 tokenId) public view returns (address) {
@@ -175,7 +217,7 @@ library LibStorage {
     require(getTokenCreator(tokenId) == msg.sender, 'Only creator of token can add new asset version');
     ds.tokenData[tokenId].assets[ds.tokenData[tokenId].assets.length] = asset;
     ds.tokenData[tokenId].totalVersionCount++;
-    ds.tokenData[tokenId].currentVersion++;
+    ds.tokenData[tokenId].currentVersion = ds.tokenData[tokenId].totalVersionCount;
   }
 
   function changeVersion(uint256 tokenId, uint256 version) external {

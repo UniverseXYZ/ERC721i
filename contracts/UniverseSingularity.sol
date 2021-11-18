@@ -37,14 +37,13 @@ contract UniverseSingularity is ERC165, ERC721 {
   }
 
   function mint(
-    string memory _tokenURI,
     string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [text context], [additional assets], [text context]]
     string memory _licenseURI,
     LibStorage.Fee[] memory _fees
   ) public returns (uint256) {
     LibStorage.Storage storage ds = LibStorage.libStorage();
 
-    LibStorage.mint(_tokenURI, _assets, _licenseURI, _fees);
+    LibStorage.mint(_assets, _licenseURI, _fees);
 
     uint256 newTokenId = ds._tokenIdCounter.current();
     _mint(msg.sender, newTokenId);

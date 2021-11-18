@@ -9,11 +9,14 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/introspection/ERC165.sol";
+import "hardhat/console.sol";
 import 'base64-sol/base64.sol';
 
 /* TODO:
  * Animation URI
  * Withdraw ETH
+ * Factory for creator control
+ * * Create a limited token mint count
  */
 
 library LibStorage {
@@ -49,7 +52,7 @@ library LibStorage {
     string[] additionalAssetsContext; // Short text context per asset
   }
 
-  struct Storage { 
+  struct Storage {
     address payable daoAddress;
     bool daoInitialized;
     mapping (uint256 => Fee[]) fees;
@@ -84,7 +87,6 @@ library LibStorage {
   }
 
   function mint(
-    string memory _tokenURI,
     string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [text context], [additional assets], [text context]]
     string memory _licenseURI,
     Fee[] memory fees
@@ -97,7 +99,8 @@ library LibStorage {
 
     string[] memory assets = new string[](_assets[0].length);
     string[] memory assetBackups = new string[](_assets[0].length);
-    for (uint256 i = 0; i < _assets.length; i++) {
+
+    for (uint256 i = 0; i < _assets[0].length; i++) {
       assets[i] = _assets[0][i];
       assetBackups[i] = _assets[1][i];
     }
@@ -131,7 +134,7 @@ library LibStorage {
 
     _registerFees(newTokenId, fees);
 
-    emit TokenMinted(newTokenId, _tokenURI, msg.sender, block.timestamp);
+    emit TokenMinted(newTokenId, _assets[0][0], msg.sender, block.timestamp);
   }
 
   function mintOnChain(
@@ -148,7 +151,7 @@ library LibStorage {
 
     string[] memory assets = new string[](_assets[0].length);
     string[] memory assetBackups = new string[](_assets[0].length);
-    for (uint256 i = 0; i < _assets.length; i++) {
+    for (uint256 i = 0; i < _assets[0].length; i++) {
       assets[i] = _assets[0][i];
       assetBackups[i] = _assets[1][i];
     }
@@ -169,19 +172,9 @@ library LibStorage {
       modifiables[i] = (keccak256(abi.encodePacked((_metadataValues[i][2]))) == keccak256(abi.encodePacked(('1')))); // 1 is modifiable, 0 is permanent
     }
 
-    // Metadata memory _metadata = Metadata({
-    //   tokenName: _assets[5][0],
-    //   tokenDescription: _assets[5][1],
-    //   name: propertyNames,
-    //   value: propertyValues,
-    //   modifiable: modifiables,
-    //   propertyCount: _metadataValues.length
-    // });
     string[] memory assetData = _assets[5];
     uint256 propertyCount = _metadataValues.length;
 
-    // string[] memory _assets = new string[](1); // TEST PUSH
-    // _assets[0] = _tokenData[0];
     ds.tokenData[newTokenId] = TokenData({
       tokenCreator: msg.sender,
       isOnChain: true,
@@ -235,6 +228,7 @@ library LibStorage {
 
   function tokenURI(uint256 tokenId) public view returns (string memory) {
     Storage storage ds = libStorage();
+
     if (!ds.tokenData[tokenId].isOnChain) {
       return ds.tokenData[tokenId].assets[ds.tokenData[tokenId].currentVersion];
     } else {

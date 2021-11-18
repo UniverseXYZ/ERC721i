@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { utils } = require('ethers');
+const metadata = require('./metadata.json');
 
 function base64toJSON(string) {
   return JSON.parse(Buffer.from(string.replace('data:application/json;base64,',''), 'base64').toString())
@@ -34,10 +35,24 @@ describe("UniverseSingularity Test", async function() {
     await deployInstance.deployed();
   });
 
-  it("should mint one token", async function() {
-    // await deployInstance.mint(0, {value: tokenPrice });
-    // expect(await deployInstance.remainingTokens(0)).to.equal(59);
-    // await packsInstance.functions['mint()']({value: tokenPrice})
-    // expect((await packsInstance.getTokens()).length).to.equal(totalTokenCount - 1);
+  it("should mint one basic token", async function() {
+    const tokenData = metadata.basic;
+    await deployInstance.mint(tokenData.assets, tokenData.licenseURI, tokenData.fees);
+  });
+
+  it("should return basic tokenURI", async function() {
+    const data = await deployInstance.tokenURI(1);
+    console.log(data);
+  });
+
+  it("should mint one onchain token", async function() {
+    const tokenData = metadata.onchain;
+    await deployInstance.mintOnChain(tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees);
+  });
+
+  it("should return onchain tokenURI", async function() {
+    const data = await deployInstance.tokenURI(2);
+    const tokenJSON = base64toJSON(data);
+    console.log(tokenJSON);
   });
 });

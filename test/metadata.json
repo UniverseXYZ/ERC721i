@@ -1,0 +1,73 @@
+{
+  "basic": {
+    "assets": [
+      ["https://arweave.net/firstAsset", "https://arweave.net/secondAsset"],
+      ["https://arweave.net/backupAsset", "https://arweave.net/backupAsset"],
+      ["First Asset", "Second Asset"],
+      ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
+      ["Additional Asset 1", "Additional Asset 2"],
+      ["Complex token", "This is the token description of the complex token"]
+    ],
+    "licenseURI": "",
+    "fees": []
+  },
+  "onchain": {
+    "assets": [
+      ["https://arweave.net/firstAsset", "https://arweave.net/secondAsset"],
+      ["https://arweave.net/backupAsset", "https://arweave.net/backupAsset"],
+      ["First Asset", "Second Asset"],
+      ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
+      ["Additional Asset 1", "Additional Asset 2"],
+      ["Complex token", "This is the token description of the complex token"]
+    ],
+    "metadata": [],
+    "licenseURI": "https://arweave.net/license",
+    "fees": []
+  },
+  "large": {
+    "assets": [
+      [
+        "https://arweave.net/firstAsset",
+        "https://arweave.net/secondAsset",
+        "https://arweave.net/thirdAsset",
+        "https://arweave.net/fourthAsset",
+        "https://arweave.net/fifthAsset",
+        "https://arweave.net/sixthAsset",
+        "https://arweave.net/seventhAsset",
+        "https://arweave.net/eighthAsset",
+        "https://arweave.net/ninthAsset",
+        "https://arweave.net/tenthAsset"
+      ],
+      [
+        "https://arweave.net/firstAssetbackup",
+        "https://arweave.net/secondAssetbackup",
+        "https://arweave.net/thirdAssetbackup",
+        "https://arweave.net/fourthAssetbackup",
+        "https://arweave.net/fifthAssetbackup",
+        "https://arweave.net/sixthAssetbackup",
+        "https://arweave.net/seventhAssetbackup",
+        "https://arweave.net/eighthAssetbackup",
+        "https://arweave.net/ninthAssetbackup",
+        "https://arweave.net/tenthAssetbackup"
+      ],
+      [
+        "First Asset",
+        "Second Asset",
+        "Third Asset",
+        "Fouth Asset",
+        "Fifth Asset",
+        "Sixth Asset",
+        "Seventh Asset",
+        "Eighth Asset",
+        "Ninth Asset",
+        "Tenth Asset"
+      ],
+      ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
+      ["Additional Asset 1", "Additional Asset 2"],
+      ["Complex token", "This is the token description of the complex token"]
+    ],
+    "metadata": [],
+    "licenseURI": "https://arweave.net/license",
+    "fees": []
+  }
+}

@@ -2,12 +2,12 @@
   "basic": {
     "isOnChain": false,
     "assets": [
-      ["https://arweave.net/firstAsset", "https://arweave.net/secondAsset"],
-      ["https://arweave.net/backupAsset", "https://arweave.net/backupAsset"],
-      ["First Asset", "Second Asset"],
-      ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
-      ["Additional Asset 1", "Additional Asset 2"],
-      ["Complex token", "This is the token description of the complex token"]
+      ["https://arweave.net/firstAsset"],
+      ["https://arweave.net/backupAsset"],
+      [""],
+      [],
+      [],
+      []
     ],
     "metadata": [],
     "licenseURI": "",

@@ -15,6 +15,7 @@ import 'base64-sol/base64.sol';
 /* TODO:
  * Animation URI
  * Withdraw ETH
+ * Bulk add assets post-mint
  * Factory for creator control
  * * Create a limited token mint count
  */
@@ -53,6 +54,7 @@ library LibStorage {
   }
 
   struct Storage {
+    address singularityAddress;
     address payable daoAddress;
     bool daoInitialized;
     mapping (uint256 => Fee[]) fees;
@@ -88,12 +90,14 @@ library LibStorage {
 
   function mint(
     bool _isOnChain,
-    string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [text context], [additional assets], [text context], [token name, desc]]
+    uint256 _currentVersion,
+    string[][] memory _assets, // ordered lists: [0: [main assets], 1: [backup assets], 2: [text context], 3: [additional assets], 4: [text context], 5: [token name, desc]]
     string[][] memory _metadataValues,
     string memory _licenseURI,
     Fee[] memory fees
   ) external returns (uint256) {
-    require(_assets[0].length == _assets[1].length && _assets[1].length == _assets[2].length && _assets[3].length == _assets[4].length, 'Invalid assets provided');
+    require(_assets[0].length == _assets[1].length && _assets[1].length == _assets[2].length && _assets[3].length == _assets[4].length, "Invalid assets provided");
+    require(_currentVersion <= _assets[0].length, "Default version out of bounds");
     Storage storage ds = libStorage();
 
     ds._tokenIdCounter.increment();
@@ -156,8 +160,8 @@ library LibStorage {
       assetBackups: assetBackups,
       additionalAssets: additionalAssets,
       additionalAssetsContext: additionalAssetsContext,
-      totalVersionCount: 1,
-      currentVersion: 1
+      totalVersionCount: assets.length,
+      currentVersion: _currentVersion
     });
 
     _registerFees(newTokenId, fees);
@@ -180,22 +184,34 @@ library LibStorage {
 
   function changeVersion(uint256 tokenId, uint256 version) external {
     Storage storage ds = libStorage();
+    ERC721 singularity = ERC721(ds.singularityAddress);
+    require(singularity.ownerOf(tokenId) == msg.sender || getTokenCreator(tokenId) == msg.sender, 'Only creator and owner can change asset');
     require(version <= ds.tokenData[tokenId].totalVersionCount, 'Out of version bounds');
     require(version >= 1, 'Out of version bounds');
     ds.tokenData[tokenId].currentVersion = version;
   }
 
-  function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) public onlyDAO {
+  function getCurrentVersion(uint256 tokenId) public view returns (uint256) {
+    Storage storage ds = libStorage();
+    return ds.tokenData[tokenId].currentVersion;
+  }
+
+  function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) external {
     Storage storage ds = libStorage();
     require(ds.tokenData[tokenId].metadata.modifiable[propertyIndex], 'Field not editable');
     ds.tokenData[tokenId].metadata.value[propertyIndex] = value;
+  }
+
+  function licenseURI(uint256 tokenId) public view returns (string memory) {
+    Storage storage ds = libStorage();
+    return ds.tokenData[tokenId].licenseURI;
   }
 
   function tokenURI(uint256 tokenId) public view returns (string memory) {
     Storage storage ds = libStorage();
 
     if (!ds.tokenData[tokenId].isOnChain) {
-      return ds.tokenData[tokenId].assets[ds.tokenData[tokenId].currentVersion];
+      return ds.tokenData[tokenId].assets[ds.tokenData[tokenId].currentVersion - 1];
     } else {
       string memory encodedMetadata = '';
       for (uint i = 0; i < ds.tokenData[tokenId].metadata.propertyCount; i++) {
@@ -221,7 +237,7 @@ library LibStorage {
                 '", "description":"',
                 ds.tokenData[tokenId].metadata.tokenDescription,
                 '", "image": "',
-                ds.tokenData[tokenId].assets[ds.tokenData[tokenId].currentVersion],
+                ds.tokenData[tokenId].assets[ds.tokenData[tokenId].currentVersion - 1],
                 '", "license": "',
                 ds.tokenData[tokenId].licenseURI,
                 '", "attributes": [',

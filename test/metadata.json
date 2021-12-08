@@ -3,7 +3,7 @@
     "isOnChain": false,
     "assets": [
       ["https://arweave.net/firstAsset"],
-      ["https://arweave.net/backupAsset"],
+      ["https://ipfs.io/backupAsset"],
       [""],
       [],
       [],
@@ -17,7 +17,7 @@
     "isOnChain": true,
     "assets": [
       ["https://arweave.net/firstAsset", "https://arweave.net/secondAsset"],
-      ["https://arweave.net/backupAsset", "https://arweave.net/backupAsset"],
+      ["https://ipfs.io/backupAsset", "https://ipfs.io/backupAsset"],
       ["First Asset", "Second Asset"],
       ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
       ["Additional Asset 1", "Additional Asset 2"],
@@ -43,16 +43,16 @@
         "https://arweave.net/tenthAsset"
       ],
       [
-        "https://arweave.net/firstAssetbackup",
-        "https://arweave.net/secondAssetbackup",
-        "https://arweave.net/thirdAssetbackup",
-        "https://arweave.net/fourthAssetbackup",
-        "https://arweave.net/fifthAssetbackup",
-        "https://arweave.net/sixthAssetbackup",
-        "https://arweave.net/seventhAssetbackup",
-        "https://arweave.net/eighthAssetbackup",
-        "https://arweave.net/ninthAssetbackup",
-        "https://arweave.net/tenthAssetbackup"
+        "https://ipfs.io/firstAssetbackup",
+        "https://ipfs.io/secondAssetbackup",
+        "https://ipfs.io/thirdAssetbackup",
+        "https://ipfs.io/fourthAssetbackup",
+        "https://ipfs.io/fifthAssetbackup",
+        "https://ipfs.io/sixthAssetbackup",
+        "https://ipfs.io/seventhAssetbackup",
+        "https://ipfs.io/eighthAssetbackup",
+        "https://ipfs.io/ninthAssetbackup",
+        "https://ipfs.io/tenthAssetbackup"
       ],
       [
         "First Asset",

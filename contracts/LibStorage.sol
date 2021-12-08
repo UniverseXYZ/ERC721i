@@ -16,7 +16,9 @@ import 'base64-sol/base64.sol';
  * Animation URI
  * Withdraw ETH
  * Bulk add assets post-mint
+ * Owner protection for writable functions
  * Factory for creator control
+ * Multiple token IDs pointing to same metadata saving gas costs
  * * Create a limited token mint count
  */
 

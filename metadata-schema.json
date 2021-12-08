@@ -1,0 +1,43 @@
+{
+  "name": "NFT Title",
+  "description": "NFT Description",
+  "image_url": "https://arweave.net/hash",
+  "image_preview_url": "aws compressed",
+  "image_thumbnail_url": "aws compressed & downsized",
+  "image_original_url": "aws original asset",
+  "assets": [
+    {
+      "name": "asset title (optional)",
+      "description": "asset description (optional)",
+      "arweave_hash": "arweave hash",
+      "ipfs_hash": "ipfs hash",
+      "preview": "aws compressed",
+      "thumbnail": "aws compressed & downsized",
+      "original": "aws original asset"
+    }
+  ],
+  "additional_assets": [
+    {
+      "name": "asset title (optional)",
+      "description": "asset description (optional)",
+      "arweave_hash": "arweave hash",
+      "ipfs_hash": "ipfs hash",
+      "preview": "aws compressed",
+      "thumbnail": "aws compressed & downsized",
+      "original": "aws original asset"
+    }
+  ],
+  "royalties": [
+    {
+    "address": "0xa8047c2a86d5a188b0e15c3c10e2bc144cb272c2",
+    "amount": 10
+    }
+  ],
+  "attributes": [
+    {
+      "trait_type": "Creative Director",
+      "value": "Jesus"
+    }
+  ],
+  "license": "https://arweave.net/hash"
+}

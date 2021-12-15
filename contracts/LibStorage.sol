@@ -19,6 +19,7 @@ import 'base64-sol/base64.sol';
  * Owner protection for writable functions
  * Factory for creator control
  * Multiple token IDs pointing to same metadata saving gas costs
+ * Time-decreasing royalties (?)
  * * Create a limited token mint count
  */
 

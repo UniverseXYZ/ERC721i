@@ -5,11 +5,14 @@
       ["https://arweave.net/firstAsset"],
       ["https://ipfs.io/backupAsset"],
       [""],
+      [""],
       [],
       [],
       []
     ],
-    "metadata": [],
+    "metadata": [
+      [],[],[]
+    ],
     "licenseURI": "",
     "fees": []
   },
@@ -67,11 +70,39 @@
         "Ninth Asset",
         "Tenth Asset"
       ],
+      [
+        "First Description",
+        "Second Description",
+        "Third Description",
+        "Fouth Description",
+        "Fifth Description",
+        "Sixth Description",
+        "Seventh Description",
+        "Eighth Description",
+        "Ninth Description",
+        "Tenth Description"
+      ],
       ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
       ["Additional Asset 1", "Additional Asset 2"],
       ["Complex token", "This is the token description of the complex token"]
     ],
-    "metadata": [],
+    "metadata": [
+      [
+        "Rarity",
+        "Score",
+        "Color"
+      ],
+      [
+        "Legedary",
+        "100",
+        "Blue"
+      ],
+      [
+        "0",
+        "0",
+        "1"
+      ]
+    ],
     "licenseURI": "https://arweave.net/license",
     "fees": []
   }

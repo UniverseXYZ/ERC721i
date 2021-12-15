@@ -58,7 +58,7 @@ describe("UniverseSingularity", async function() {
       const data = await deployInstance.tokenURI(2);
       const tokenJSON = base64toJSON(data);
       console.log(tokenJSON);
-      expect(tokenJSON.name).to.equal(metadata.large.assets[5][0])
+      expect(tokenJSON.name).to.equal(metadata.large.assets[6][0])
     });
 
     it("should return licenseURI", async function() {

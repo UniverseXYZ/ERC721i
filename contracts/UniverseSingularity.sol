@@ -48,7 +48,7 @@ contract UniverseSingularity is ERC165, ERC721 {
     LibStorage.Fee[] memory _fees
   ) public returns (uint256) {
     LibStorage.Storage storage ds = LibStorage.libStorage();
-    require(_assets.length == 6, 'Invalid parameters');
+    require(_assets.length == 7, 'Invalid parameters');
 
     LibStorage.mint(_isOnChain, _currentVersion, _assets, _metadataValues, _licenseURI, _fees);
 

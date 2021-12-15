@@ -14,7 +14,6 @@ import 'base64-sol/base64.sol';
 
 /* TODO:
  * Animation URI
- * Withdraw ETH
  * Bulk add assets post-mint
  * Owner protection for writable functions
  * Factory for creator control
@@ -50,6 +49,8 @@ library LibStorage {
     string licenseURI; // Usage rights for token
     string[] assets; // Each asset in array is a version
     string[] assetBackups; // Each backup upload can be toggled as main display asset (e.g. IPFS / ARWEAVE)
+    string[] assetTitles; // Title of each core asset (optional)
+    string[] assetDescriptions; // Description of each core asset (optional)
     uint256 totalVersionCount; // Total number of existing states
     uint256 currentVersion; // Current existing state
     string[] additionalAssets; // Additional assets provided by minter
@@ -94,7 +95,7 @@ library LibStorage {
   function mint(
     bool _isOnChain,
     uint256 _currentVersion,
-    string[][] memory _assets, // ordered lists: [0: [main assets], 1: [backup assets], 2: [text context], 3: [additional assets], 4: [text context], 5: [token name, desc]]
+    string[][] memory _assets, // ordered lists: [0: [main assets], 1: [backup assets], 2: [asset titles], 3: [asset descriptions], 4: [additional assets], 5: [text context], 6: [token name, desc]]
     string[][] memory _metadataValues,
     string memory _licenseURI,
     Fee[] memory fees
@@ -106,19 +107,23 @@ library LibStorage {
     ds._tokenIdCounter.increment();
     uint256 newTokenId = ds._tokenIdCounter.current();
 
-    string[] memory assets = new string[](_assets[0].length);
-    string[] memory assetBackups = new string[](_assets[0].length);
-    for (uint256 i = 0; i < _assets[0].length; i++) {
-      assets[i] = _assets[0][i];
-      assetBackups[i] = _assets[1][i];
-    }
+    // string[] memory assets = new string[](_assets[0].length);
+    // string[] memory assetBackups = new string[](_assets[0].length);
+    // string[] memory assetTitles = new string[](_assets[0].length);
+    // string[] memory assetDescriptions = new string[](_assets[0].length);
+    // for (uint256 i = 0; i < _assets[0].length; i++) {
+    //   assets[i] = _assets[0][i];
+    //   assetBackups[i] = _assets[1][i];
+    //   assetTitles[i] = _assets[2][i];
+    //   assetDescriptions[i] = _assets[3][i];
+    // }
 
-    string[] memory additionalAssets = new string[](_assets[3].length);
-    string[] memory additionalAssetsContext = new string[](_assets[3].length);
-    for (uint256 i = 0; i < _assets[3].length; i++) {
-      additionalAssets[i] = _assets[3][i];
-      additionalAssetsContext[i] = _assets[4][i];
-    }
+    // string[] memory additionalAssets = new string[](_assets[4].length);
+    // string[] memory additionalAssetsContext = new string[](_assets[4].length);
+    // for (uint256 i = 0; i < _assets[4].length; i++) {
+    //   additionalAssets[i] = _assets[4][i];
+    //   additionalAssetsContext[i] = _assets[5][i];
+    // }
 
     Metadata memory metadata;
     if (_isOnChain) {
@@ -132,7 +137,7 @@ library LibStorage {
         modifiables[i] = (keccak256(abi.encodePacked((_metadataValues[i][2]))) == keccak256(abi.encodePacked(('1')))); // 1 is modifiable, 0 is permanent
       }
 
-      string[] memory assetData = _assets[5];
+      string[] memory assetData = _assets[6];
       uint256 propertyCount = _metadataValues.length;
 
       metadata = Metadata({
@@ -159,11 +164,13 @@ library LibStorage {
       isOnChain: _isOnChain,
       metadata: metadata,
       licenseURI: _licenseURI,
-      assets: assets,
-      assetBackups: assetBackups,
-      additionalAssets: additionalAssets,
-      additionalAssetsContext: additionalAssetsContext,
-      totalVersionCount: assets.length,
+      assets: _assets[0],
+      assetBackups: _assets[1],
+      assetTitles: _assets[2],
+      assetDescriptions: _assets[3],
+      additionalAssets: _assets[4],
+      additionalAssetsContext: _assets[5],
+      totalVersionCount: _assets[0].length,
       currentVersion: _currentVersion
     });
 
@@ -296,11 +303,15 @@ library LibStorage {
     return result;
   }
 
-  function royaltyInfo(uint256 tokenId, uint256 value) public view returns (address recipient, uint256 amount){
+  function royaltyInfo(uint256 tokenId, uint256 value) public view returns (address recipient, uint256 amount) {
     address payable[] memory rec = getFeeRecipients(tokenId);
     require(rec.length <= 1, "More than 1 royalty recipient");
 
     if (rec.length == 0) return (address(this), 0);
     return (rec[0], getFeeBps(tokenId)[0] * value / 10000);
+  }
+
+  function withdraw(address _to, uint amount) public onlyDAO {
+    payable(_to).call{value:amount, gas:200000}("");
   }
 }

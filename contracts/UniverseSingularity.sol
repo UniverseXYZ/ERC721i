@@ -42,7 +42,7 @@ contract UniverseSingularity is ERC165, ERC721 {
   function mint(
     bool _isOnChain,
     uint256 _currentVersion,
-    string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [text context], [additional assets], [text context]]
+    string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [asset titles], [asset descriptions], [additional assets], [text context]]
     string[][] memory _metadataValues,
     string memory _licenseURI,
     LibStorage.Fee[] memory _fees

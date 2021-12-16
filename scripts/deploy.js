@@ -46,8 +46,6 @@ async function main() {
   await packsInstance.deployed();
 
   console.log("Packs deployed to:", packsInstance.address);
-
-  // Add instinct metadata
   let coreData = [];
   let assets = [];
   let metaData = [];

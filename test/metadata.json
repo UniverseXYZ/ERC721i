@@ -8,15 +8,15 @@
       [""],
       [],
       [],
+      [],
       []
     ],
-    "metadata": [
-      [],[],[]
-    ],
+    "metadata": [[],[],[]],
     "licenseURI": "",
-    "fees": []
+    "fees": [],
+    "editions": 1
   },
-  "onchain": {
+  "animation": {
     "isOnChain": true,
     "assets": [
       ["https://arweave.net/firstAsset", "https://arweave.net/secondAsset"],
@@ -25,11 +25,13 @@
       ["First Description", "Second Description"],
       ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
       ["Additional Asset 1", "Additional Asset 2"],
-      ["Complex token", "This is the token description of the complex token"]
+      ["animation_url token", "This is the token description of the complex token"],
+      ["https://google.com"]
     ],
-    "metadata": [],
+    "metadata": [[],[],[]],
     "licenseURI": "https://arweave.net/license",
-    "fees": []
+    "fees": [],
+    "editions": 10
   },
   "large": {
     "isOnChain": true,
@@ -84,7 +86,8 @@
       ],
       ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
       ["Additional Asset 1", "Additional Asset 2"],
-      ["Complex token", "This is the token description of the complex token"]
+      ["Complex token", "This is the token description of the complex token"],
+      []
     ],
     "metadata": [
       [
@@ -104,6 +107,7 @@
       ]
     ],
     "licenseURI": "https://arweave.net/license",
-    "fees": []
+    "fees": [],
+    "editions": 10
   }
 }

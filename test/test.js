@@ -38,7 +38,7 @@ describe("UniverseSingularity", async function() {
   describe("BASIC TOKEN TESTS", async function() {
     it("should mint one", async function() {
       const tokenData = metadata.basic;
-      await deployInstance.mint(tokenData.isOnChain, 1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees);
+      await deployInstance.mint(tokenData.isOnChain, 1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees, tokenData.editions);
     });
 
     it("should return tokenURI", async function() {
@@ -48,10 +48,10 @@ describe("UniverseSingularity", async function() {
   });
 
   describe("ONCHAIN TOKEN TESTS", async function() {
-    const version = 8;
+    let version = 8;
     it("should mint one", async function() {
       const tokenData = metadata.large;
-      await deployInstance.mint(tokenData.isOnChain, version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees);
+      await deployInstance.mint(tokenData.isOnChain, version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees, tokenData.editions);
     });
   
     it("should return tokenURI", async function() {
@@ -69,6 +69,19 @@ describe("UniverseSingularity", async function() {
     it("should return set current version", async function() {
       const data = await deployInstance.getCurrentVersion(2);
       expect(data).to.equal(version)
+    });
+
+    // version = 50;
+    // it("should return out of bounds version", async function() {
+    //   const tokenData = metadata.animation;
+    //   expect(await deployInstance.mint(tokenData.isOnChain, version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees)).to.be.reverted;
+    // });
+  })
+
+  describe("ANIMATION_URL TOKEN TESTS", async function() {
+    it("should mint one", async function() {
+      const tokenData = metadata.animation;
+      await deployInstance.mint(tokenData.isOnChain, 1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees, tokenData.editions);
     });
   })
 });

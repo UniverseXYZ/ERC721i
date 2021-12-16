@@ -13,11 +13,11 @@ import "hardhat/console.sol";
 import 'base64-sol/base64.sol';
 
 /* TODO:
- * Animation URI
- * Bulk add assets post-mint
+ * Animation URI (fix tokenURI)
+ * Bulk add assets post-mint (?)
  * Owner protection for writable functions
  * Factory for creator control
- * Multiple token IDs pointing to same metadata saving gas costs
+ * Multiple token IDs pointing to same metadata saving gas costs (DONE)
  * Time-decreasing royalties (?)
  * * Create a limited token mint count
  */
@@ -44,7 +44,7 @@ library LibStorage {
 
   struct TokenData {
     address tokenCreator; // User who minted
-    bool isOnChain; // Flags for onchain token data
+    bool isOnChain; // Flag for onchain token data
     Metadata metadata;
     string licenseURI; // Usage rights for token
     string[] assets; // Each asset in array is a version
@@ -55,6 +55,7 @@ library LibStorage {
     uint256 currentVersion; // Current existing state
     string[] additionalAssets; // Additional assets provided by minter
     string[] additionalAssetsContext; // Short text context per asset
+    string iframeAsset;
   }
 
   struct Storage {
@@ -63,6 +64,8 @@ library LibStorage {
     bool daoInitialized;
     mapping (uint256 => Fee[]) fees;
     mapping (uint256 => TokenData) tokenData;
+    mapping (uint256 => uint256) editions; // Declares multiple editions for an NFT
+    mapping (uint256 => uint256) editionedPointers; // Points to metadata of NFT editions
 
     Counters.Counter _tokenIdCounter;
   }
@@ -95,10 +98,11 @@ library LibStorage {
   function mint(
     bool _isOnChain,
     uint256 _currentVersion,
-    string[][] memory _assets, // ordered lists: [0: [main assets], 1: [backup assets], 2: [asset titles], 3: [asset descriptions], 4: [additional assets], 5: [text context], 6: [token name, desc]]
+    string[][] memory _assets, // ordered lists: [0: [main assets], 1: [backup assets], 2: [asset titles], 3: [asset descriptions], 4: [additional assets], 5: [text context], 6: [token name, desc], 7: [iFrame asset (optional)]]
     string[][] memory _metadataValues,
     string memory _licenseURI,
-    Fee[] memory fees
+    Fee[] memory _fees,
+    uint256 _editions
   ) external returns (uint256) {
     require(_assets[0].length == _assets[1].length && _assets[1].length == _assets[2].length && _assets[2].length == _assets[3].length && _assets[4].length == _assets[5].length, "Invalid assets provided");
     require(_currentVersion <= _assets[0].length, "Default version out of bounds");
@@ -106,21 +110,23 @@ library LibStorage {
 
     ds._tokenIdCounter.increment();
     uint256 newTokenId = ds._tokenIdCounter.current();
+    ds.editions[newTokenId] = _editions;
 
     Metadata memory metadata;
     if (_isOnChain) {
-      bool[] memory modifiables = new bool[](_metadataValues.length);
-      for (uint256 i = 0; i < _metadataValues.length; i++) {
-        modifiables[i] = (keccak256(abi.encodePacked((_metadataValues[2][i]))) == keccak256(abi.encodePacked(('1')))); // 1 is modifiable, 0 is permanent
-      }
+      require (_metadataValues[0].length == _metadataValues[1].length, "Invalid metadata provided");
 
       uint256 propertyCount = _metadataValues[0].length;
+      bool[] memory modifiables = new bool[](_metadataValues.length);
+      for (uint256 i = 0; i < propertyCount; i++) {
+        modifiables[i] = (keccak256(abi.encodePacked((_metadataValues[2][i]))) == keccak256(abi.encodePacked(('1')))); // 1 is modifiable, 0 is permanent
+      }
 
       metadata = Metadata({
         tokenName: _assets[6][0],
         tokenDescription: _assets[6][1],
-        name: _metadataValues[0],
-        value: _metadataValues[1],
+        name: (_metadataValues[0].length > 0) ? _metadataValues[0] : new string[](0),
+        value: (_metadataValues[1].length > 0) ? _metadataValues[1] : new string[](0),
         modifiable: modifiables,
         propertyCount: propertyCount
       });
@@ -135,6 +141,7 @@ library LibStorage {
       });
     }
 
+    string memory _iframeAsset = (_assets[7].length == 1) ? _assets[7][0] : "";
     ds.tokenData[newTokenId] = TokenData({
       tokenCreator: msg.sender,
       isOnChain: _isOnChain,
@@ -146,13 +153,16 @@ library LibStorage {
       assetDescriptions: _assets[3],
       additionalAssets: _assets[4],
       additionalAssetsContext: _assets[5],
+      iframeAsset: _iframeAsset,
       totalVersionCount: _assets[0].length,
       currentVersion: _currentVersion
     });
 
-    _registerFees(newTokenId, fees);
-
-    emit TokenMinted(newTokenId, _assets[0][0], msg.sender, block.timestamp);
+    for (uint256 i = 1; i < _editions; i++) {
+      ds.editionedPointers[newTokenId + i] = newTokenId;
+      _registerFees(newTokenId + i, _fees);
+      emit TokenMinted(newTokenId + i, _assets[0][0], msg.sender, block.timestamp);
+    }
   }
 
   function getTokenCreator(uint256 tokenId) public view returns (address) {
@@ -196,19 +206,21 @@ library LibStorage {
   function tokenURI(uint256 tokenId) public view returns (string memory) {
     Storage storage ds = libStorage();
 
-    if (!ds.tokenData[tokenId].isOnChain) {
-      return ds.tokenData[tokenId].assets[ds.tokenData[tokenId].currentVersion - 1];
+    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+
+    if (!ds.tokenData[tokenIdentifier].isOnChain) {
+      return ds.tokenData[tokenIdentifier].assets[ds.tokenData[tokenIdentifier].currentVersion - 1];
     } else {
       string memory encodedMetadata = '';
-      for (uint i = 0; i < ds.tokenData[tokenId].metadata.propertyCount; i++) {
+      for (uint i = 0; i < ds.tokenData[tokenIdentifier].metadata.propertyCount; i++) {
         encodedMetadata = string(abi.encodePacked(
           encodedMetadata,
           '{"trait_type":"',
-          ds.tokenData[tokenId].metadata.name[i],
+          ds.tokenData[tokenIdentifier].metadata.name[i],
           '", "value":"',
-          ds.tokenData[tokenId].metadata.value[i],
+          ds.tokenData[tokenIdentifier].metadata.value[i],
           '"}',
-          i == ds.tokenData[tokenId].metadata.propertyCount - 1 ? '' : ',')
+          i == ds.tokenData[tokenIdentifier].metadata.propertyCount - 1 ? '' : ',')
         );
       }
 
@@ -219,13 +231,13 @@ library LibStorage {
             bytes(
               abi.encodePacked(
                 '{"name":"',
-                ds.tokenData[tokenId].metadata.tokenName,
+                ds.tokenData[tokenIdentifier].metadata.tokenName,
                 '", "description":"',
-                ds.tokenData[tokenId].metadata.tokenDescription,
+                ds.tokenData[tokenIdentifier].metadata.tokenDescription,
                 '", "image": "',
-                ds.tokenData[tokenId].assets[ds.tokenData[tokenId].currentVersion - 1],
+                ds.tokenData[tokenIdentifier].assets[ds.tokenData[tokenIdentifier].currentVersion - 1],
                 '", "license": "',
-                ds.tokenData[tokenId].licenseURI,
+                ds.tokenData[tokenIdentifier].licenseURI,
                 '", "attributes": [',
                 encodedMetadata,
                 '] }'

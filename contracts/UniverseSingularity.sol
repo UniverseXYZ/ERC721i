@@ -45,15 +45,19 @@ contract UniverseSingularity is ERC165, ERC721 {
     string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [asset titles], [asset descriptions], [additional assets], [text context]]
     string[][] memory _metadataValues,
     string memory _licenseURI,
-    LibStorage.Fee[] memory _fees
+    LibStorage.Fee[] memory _fees,
+    uint256 _editions
   ) public returns (uint256) {
     LibStorage.Storage storage ds = LibStorage.libStorage();
-    require(_assets.length == 7, 'Invalid parameters');
+    require(_assets.length == 8, 'Invalid parameters');
 
-    LibStorage.mint(_isOnChain, _currentVersion, _assets, _metadataValues, _licenseURI, _fees);
+    LibStorage.mint(_isOnChain, _currentVersion, _assets, _metadataValues, _licenseURI, _fees, _editions);
 
-    uint256 newTokenId = ds._tokenIdCounter.current();
-    _mint(msg.sender, newTokenId);
+    for (uint256 i = 0; i < _editions; i++) {
+      uint256 newTokenId = ds._tokenIdCounter.current();
+      _mint(msg.sender, newTokenId);
+      if (i != (_editions - 1)) ds._tokenIdCounter.increment();
+    }
   }
 
   function getTokenCreator(uint256 tokenId) public view returns (address) {

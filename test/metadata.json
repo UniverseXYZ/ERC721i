@@ -15,8 +15,8 @@
     "licenseURI": "",
     "editions": 1,
     "fees": [
-      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 500, 0, 0, 0],
-      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 300, 0, 0, 0]
+      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 5000, 1, 1000, 164019911],
+      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 1000, 2, 500, 164019911]
     ]
   },
   "animation": {
@@ -35,8 +35,8 @@
     "licenseURI": "https://arweave.net/license",
     "editions": 100,
     "fees": [
-      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 500, 0, 0, 0],
-      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 300, 0, 0, 0]
+      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 5000, 0, 0, 0],
+      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 1000, 0, 0, 0]
     ]
   },
   "large": {

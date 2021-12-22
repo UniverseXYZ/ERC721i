@@ -18,8 +18,7 @@ import 'base64-sol/base64.sol';
  * Owner protection for writable functions
  * Factory for creator control
  * Multiple token IDs pointing to same metadata saving gas costs (DONE)
- * Time-decreasing royalties (?)
- * * Create a limited token mint count
+ * Time-decreasing royalties
  */
 
 library LibStorage {
@@ -31,6 +30,9 @@ library LibStorage {
   struct Fee {
     address payable recipient;
     uint256 value;
+    uint256 decayType; // 0: no decay, 1: linear, 2: timestamp reduction / expiration
+    uint256 endValue;
+    uint256 endTime;
   }
 
   struct Metadata {
@@ -253,7 +255,7 @@ library LibStorage {
 
   function _registerFees(uint256 _tokenId, Fee[] memory _fees) internal returns (bool) {
     Storage storage ds = libStorage();
-    require(_fees.length <= 5, "No more than 5 recipients");
+    require(_fees.length <= 10, "No more than 5 recipients");
     address[] memory recipients = new address[](_fees.length);
     uint256[] memory bps = new uint256[](_fees.length);
     uint256 sum = 0;

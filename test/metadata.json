@@ -13,8 +13,11 @@
     ],
     "metadata": [[],[],[]],
     "licenseURI": "",
-    "fees": [],
-    "editions": 1
+    "editions": 1,
+    "fees": [
+      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 500, 0, 0, 0],
+      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 300, 0, 0, 0]
+    ]
   },
   "animation": {
     "isOnChain": true,
@@ -30,8 +33,11 @@
     ],
     "metadata": [[],[],[]],
     "licenseURI": "https://arweave.net/license",
-    "fees": [],
-    "editions": 10
+    "editions": 100,
+    "fees": [
+      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 500, 0, 0, 0],
+      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 300, 0, 0, 0]
+    ]
   },
   "large": {
     "isOnChain": true,
@@ -107,7 +113,10 @@
       ]
     ],
     "licenseURI": "https://arweave.net/license",
-    "fees": [],
-    "editions": 10
+    "editions": 10,
+    "fees": [
+      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 500, 0, 0, 0],
+      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 300, 0, 0, 0]
+    ]
   }
 }

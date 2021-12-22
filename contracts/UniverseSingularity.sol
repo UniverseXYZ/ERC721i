@@ -109,4 +109,8 @@ contract UniverseSingularity is ERC165, ERC721 {
     require(_exists(tokenId), "Nonexistent token");
     return LibStorage.royaltyInfo(tokenId, value);
   }
+
+  function withdraw(address _to, uint amount) public onlyDAO {
+    payable(_to).call{value:amount, gas:200000}("");
+  }
 }

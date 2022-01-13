@@ -18,7 +18,7 @@ import 'base64-sol/base64.sol';
  * Owner protection for writable functions
  * Factory for creator control
  * Multiple token IDs pointing to same metadata saving gas costs (DONE)
- * Time-decreasing royalties
+ * Time-dependent royalties (DONE)
  * Does royalty really need to emit event?
  */
 
@@ -30,8 +30,8 @@ library LibStorage {
 
   struct Fee {
     address payable recipient;
-    uint256 value;
     uint256 decayType; // 0: no decay, 1: linear, 2: timestamp change / expiration
+    uint256 value;
     uint256 endValue;
     uint256 startTime;
     uint256 endTime;
@@ -174,10 +174,14 @@ library LibStorage {
     return ds.tokenData[tokenId].tokenCreator;
   }
 
-  function updateAsset(uint256 tokenId, string memory asset) external {
+  function addAsset(uint256 tokenId, string[] memory assetData) external {
     Storage storage ds = libStorage();
     require(getTokenCreator(tokenId) == msg.sender, 'Only creator of token can add new asset version');
-    ds.tokenData[tokenId].assets[ds.tokenData[tokenId].assets.length] = asset;
+    uint index = ds.tokenData[tokenId].assets.length;
+    ds.tokenData[tokenId].assets[index] = assetData[0];
+    ds.tokenData[tokenId].assetBackups[index] = assetData[1];
+    ds.tokenData[tokenId].assetTitles[index] = assetData[2];
+    ds.tokenData[tokenId].assetDescriptions[index] = assetData[3];
     ds.tokenData[tokenId].totalVersionCount++;
     ds.tokenData[tokenId].currentVersion = ds.tokenData[tokenId].totalVersionCount;
   }

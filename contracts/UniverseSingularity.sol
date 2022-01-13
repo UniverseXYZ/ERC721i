@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/introspection/ERC165.sol";
+import "./IUniverseSingularity.sol";
 import "./LibStorage.sol";
 
 contract UniverseSingularity is ERC165, ERC721 {
@@ -65,9 +66,9 @@ contract UniverseSingularity is ERC165, ERC721 {
     return LibStorage.libStorage().tokenData[tokenId].tokenCreator;
   }
 
-  function updateAsset(uint256 tokenId, string memory asset) public {
+  function addAsset(uint256 tokenId, string[] memory assetData) public {
     require(_exists(tokenId), "Nonexistent token");
-    LibStorage.updateAsset(tokenId, asset);
+    LibStorage.addAsset(tokenId, assetData);
   }
 
   function changeVersion(uint256 tokenId, uint256 version) public {

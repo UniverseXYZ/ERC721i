@@ -7,6 +7,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/introspection/ERC165.sol";
 import "./IUniverseSingularity.sol";
@@ -19,6 +20,7 @@ contract UniverseSingularity is ERC165, ERC721 {
   constructor(string memory name, string memory symbol) ERC721(name, symbol) {
     LibStorage.Storage storage ds = LibStorage.libStorage();
     ds.singularityAddress = address(this);
+    ds.daoAddress = msg.sender;
   }
 
   bytes4 private constant _INTERFACE_ID_ROYALTIES_RARIBLE = 0xb7799584;
@@ -111,7 +113,17 @@ contract UniverseSingularity is ERC165, ERC721 {
     return LibStorage.royaltyInfo(tokenId, value);
   }
 
+  // Failsafe withdraw if any ETH is sent to contract
   function withdraw(address _to, uint amount) public onlyDAO {
     payable(_to).call{value:amount, gas:200000}("");
+  }
+
+  // Failsafe withdraw if any ERC20 is sent to contract
+  function withdrawERC20(uint256 amount, address tokenAddress) public onlyDAO {
+    LibStorage.Storage storage ds = LibStorage.libStorage();
+    IERC20 token = IERC20(tokenAddress);
+    uint256 erc20balance = token.balanceOf(address(this));
+    require(amount <= erc20balance, "balance is low");
+    token.transfer(ds.daoAddress, amount);
   }
 }

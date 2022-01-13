@@ -3,18 +3,12 @@
   "description": "NFT Description",
   "image_url": "https://arweave.net/url (primary/backup asset shown depending on toggle and selection)",
   "animation_url": "https://arweave.net/iframe (SHOWN ONLY IF IFRAME PARAM IS USED IN ASSET)",
-  "image_preview_url": "aws compressed (primary asset shown)",
-  "image_thumbnail_url": "aws compressed & downsized (primary asset shown)",
-  "image_original_url": "aws original asset (primary asset shown)",
   "assets": [
     {
       "name": "asset title (optional)",
       "description": "asset description (optional)",
       "primary_asset": "arweave url",
       "backup_asset": "ipfs url",
-      "preview": "aws compressed",
-      "thumbnail": "aws compressed & downsized",
-      "original": "aws original asset",
       "default": false,
       "iframe": "https://arweave.net/iframe",
       "filetype": "MP4"
@@ -24,9 +18,6 @@
       "description": "asset description (optional)",
       "primary_asset": "arweave url",
       "backup_asset": "ipfs url",
-      "preview": "aws compressed",
-      "thumbnail": "aws compressed & downsized",
-      "original": "aws original asset",
       "default": true,
       "filetype": "OBJ"
     }
@@ -35,21 +26,13 @@
     {
       "name": "asset title (optional)",
       "description": "asset description (optional)",
-      "primary_asset": "arweave url",
-      "backup_asset": "ipfs url",
-      "preview": "aws compressed",
-      "thumbnail": "aws compressed & downsized",
-      "original": "aws original asset",
+      "asset": "arweave url",
       "filetype": "PDF"
     },
     {
       "name": "asset title (optional)",
       "description": "asset description (optional)",
-      "primary_asset": "arweave url",
-      "backup_asset": "ipfs url",
-      "preview": "aws compressed",
-      "thumbnail": "aws compressed & downsized",
-      "original": "aws original asset",
+      "asset": "arweave url",
       "filetype": "PPT"
     }
   ],

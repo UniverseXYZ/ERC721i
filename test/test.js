@@ -45,6 +45,14 @@ describe("UniverseSingularity", async function() {
       const data = await deployInstance.tokenURI(1);
       expect(data).to.equal(metadata.basic.assets[0][0])
     });
+
+    it("should decrease in royalty", async function() {
+      // await ethers.provider.send('evm_setNextBlockTimestamp', [saleStartTime2]);
+      // await ethers.provider.send('evm_mine');
+      const data = await deployInstance.getFeeBps(1);
+      console.log(data);
+      console.log(data[1].toNumber());
+    });
   });
 
   describe("ONCHAIN TOKEN TESTS", async function() {

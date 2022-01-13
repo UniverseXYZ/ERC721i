@@ -19,6 +19,7 @@ import 'base64-sol/base64.sol';
  * Factory for creator control
  * Multiple token IDs pointing to same metadata saving gas costs (DONE)
  * Time-decreasing royalties
+ * Does royalty really need to emit event?
  */
 
 library LibStorage {
@@ -30,8 +31,9 @@ library LibStorage {
   struct Fee {
     address payable recipient;
     uint256 value;
-    uint256 decayType; // 0: no decay, 1: linear, 2: timestamp reduction / expiration
+    uint256 decayType; // 0: no decay, 1: linear, 2: timestamp change / expiration
     uint256 endValue;
+    uint256 startTime;
     uint256 endTime;
   }
 
@@ -160,10 +162,10 @@ library LibStorage {
       currentVersion: _currentVersion
     });
 
-    for (uint256 i = 1; i < _editions; i++) {
-      ds.editionedPointers[newTokenId + i] = newTokenId;
+    for (uint256 i = 0; i < _editions; i++) {
       _registerFees(newTokenId + i, _fees);
       emit TokenMinted(newTokenId + i, _assets[0][0], msg.sender, block.timestamp);
+      ds.editionedPointers[newTokenId + i] = newTokenId;
     }
   }
 
@@ -226,6 +228,38 @@ library LibStorage {
         );
       }
 
+      string memory assetsList = '';
+      for (uint i = 0; i < ds.tokenData[tokenIdentifier].assets.length; i++) {
+        assetsList = string(abi.encodePacked(
+          assetsList,
+          '{"name":"',
+          ds.tokenData[tokenIdentifier].assetTitles[i],
+          '", "description":"',
+          ds.tokenData[tokenIdentifier].assetDescriptions[i],
+          '", "primary_asset":"',
+          ds.tokenData[tokenIdentifier].assets[i],
+          '", "backup_asset":"',
+          ds.tokenData[tokenIdentifier].assetBackups[i],
+          '", "default":"',
+          i == ds.tokenData[tokenIdentifier].currentVersion - 1 ? 'true' : 'false',
+          '"}',
+          i == ds.tokenData[tokenIdentifier].assets.length - 1 ? '' : ',')
+        );
+      }
+
+      string memory additionalAssetsList = '';
+      for (uint i = 0; i < ds.tokenData[tokenIdentifier].additionalAssets.length; i++) {
+        additionalAssetsList = string(abi.encodePacked(
+          additionalAssetsList,
+          '{"context":"',
+          ds.tokenData[tokenIdentifier].additionalAssetsContext[i],
+          '", "asset":"',
+          ds.tokenData[tokenIdentifier].additionalAssets[i],
+          '"}',
+          i == ds.tokenData[tokenIdentifier].additionalAssets.length - 1 ? '' : ',')
+        );
+      }
+
       string memory encoded = string(
         abi.encodePacked(
           'data:application/json;base64,',
@@ -242,6 +276,12 @@ library LibStorage {
                 ds.tokenData[tokenIdentifier].licenseURI,
                 '", "attributes": [',
                 encodedMetadata,
+                ']',
+                ', "assets": [',
+                assetsList,
+                ']',
+                ', "additional_assets": [',
+                additionalAssetsList,
                 '] }'
               )
             )
@@ -288,7 +328,23 @@ library LibStorage {
     Fee[] memory _fees = ds.fees[id];
     uint[] memory result = new uint[](_fees.length);
     for (uint i = 0; i < _fees.length; i++) {
-      result[i] = _fees[i].value;
+      if (_fees[i].decayType == 0) {
+        result[i] = _fees[i].value;
+      } else if (_fees[i].decayType == 1) {
+        if (block.timestamp > _fees[i].endTime) {
+          result[i] = _fees[i].endValue;
+        } else if (block.timestamp < _fees[i].startTime) {
+          result[i] = _fees[i].value;
+        } else {
+          if (_fees[i].endValue > _fees[i].value) {
+            result[i] = _fees[i].endValue - ((_fees[i].endValue -  _fees[i].value) * (_fees[i].endTime - block.timestamp) / (_fees[i].endTime - _fees[i].startTime));
+          } else {
+            result[i] = _fees[i].endValue + (( _fees[i].value - _fees[i].endValue) * (_fees[i].endTime - block.timestamp) / (_fees[i].endTime - _fees[i].startTime));
+          }
+        }
+      } else if (_fees[i].decayType == 2) {
+        result[i] = block.timestamp > _fees[i].endTime ? _fees[i].endValue : _fees[i].value;
+      }
     }
     return result;
   }

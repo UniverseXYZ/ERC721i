@@ -73,6 +73,21 @@ contract UniverseSingularity is ERC165, ERC721 {
     LibStorage.addAsset(tokenId, assetData);
   }
 
+  function bulkAddAsset(uint256 tokenId, string[][] memory assetData) public {
+    require(_exists(tokenId), "Nonexistent token");
+    LibStorage.bulkAddAsset(tokenId, assetData);
+  }
+
+  function addSecondaryAsset(uint256 tokenId, string[] memory assetData) public {
+    require(_exists(tokenId), "Nonexistent token");
+    LibStorage.addSecondaryAsset(tokenId, assetData);
+  }
+
+  function bulkAddSecondaryAsset(uint256 tokenId, string[][] memory assetData) public {
+    require(_exists(tokenId), "Nonexistent token");
+    LibStorage.bulkAddSecondaryAsset(tokenId, assetData);
+  }
+
   function changeVersion(uint256 tokenId, uint256 version) public {
     require(_exists(tokenId), "Nonexistent token");
     LibStorage.changeVersion(tokenId, version);

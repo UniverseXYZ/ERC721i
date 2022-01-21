@@ -13,13 +13,8 @@ import "hardhat/console.sol";
 import 'base64-sol/base64.sol';
 
 /* TODO:
- * Animation URI (fix tokenURI)
- * Bulk add assets post-mint (?)
  * Owner protection for writable functions
  * Factory for creator control
- * Multiple token IDs pointing to same metadata saving gas costs (DONE)
- * Time-dependent royalties (DONE)
- * Does royalty really need to emit event?
  */
 
 library LibStorage {
@@ -59,7 +54,7 @@ library LibStorage {
     uint256 currentVersion; // Current existing state
     string[] additionalAssets; // Additional assets provided by minter
     string[] additionalAssetsContext; // Short text context per asset
-    string iframeAsset;
+    string iFrameAsset;
   }
 
   struct Storage {
@@ -145,7 +140,7 @@ library LibStorage {
       });
     }
 
-    string memory _iframeAsset = (_assets[7].length == 1) ? _assets[7][0] : "";
+    string memory _iFrameAsset = (_assets[7].length == 1) ? _assets[7][0] : "";
     ds.tokenData[newTokenId] = TokenData({
       tokenCreator: msg.sender,
       isOnChain: _isOnChain,
@@ -157,7 +152,7 @@ library LibStorage {
       assetDescriptions: _assets[3],
       additionalAssets: _assets[4],
       additionalAssetsContext: _assets[5],
-      iframeAsset: _iframeAsset,
+      iFrameAsset: _iFrameAsset,
       totalVersionCount: _assets[0].length,
       currentVersion: _currentVersion
     });
@@ -174,41 +169,65 @@ library LibStorage {
     return ds.tokenData[tokenId].tokenCreator;
   }
 
-  function addAsset(uint256 tokenId, string[] memory assetData) external {
+  function addAsset(uint256 tokenId, string[] memory assetData) public {
     Storage storage ds = libStorage();
-    require(getTokenCreator(tokenId) == msg.sender, 'Only creator of token can add new asset version');
-    uint index = ds.tokenData[tokenId].assets.length;
-    ds.tokenData[tokenId].assets[index] = assetData[0];
-    ds.tokenData[tokenId].assetBackups[index] = assetData[1];
-    ds.tokenData[tokenId].assetTitles[index] = assetData[2];
-    ds.tokenData[tokenId].assetDescriptions[index] = assetData[3];
-    ds.tokenData[tokenId].totalVersionCount++;
-    ds.tokenData[tokenId].currentVersion = ds.tokenData[tokenId].totalVersionCount;
+    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator of token can add new asset version');
+    uint index = ds.tokenData[tokenIdentifier].assets.length;
+    ds.tokenData[tokenIdentifier].assets.push(assetData[0]);
+    ds.tokenData[tokenIdentifier].assetBackups.push(assetData[1]);
+    ds.tokenData[tokenIdentifier].assetTitles.push(assetData[2]);
+    ds.tokenData[tokenIdentifier].assetDescriptions.push(assetData[3]);
+    ds.tokenData[tokenIdentifier].totalVersionCount++;
+  }
+
+  function bulkAddAsset(uint256 tokenId, string[][] memory assetData) external {
+    for (uint i = 0; i < assetData.length; i++) {
+      addAsset(tokenId, assetData[i]);
+    }
+  }
+
+  function addSecondaryAsset(uint256 tokenId, string[] memory assetData) public {
+    Storage storage ds = libStorage();
+    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator of token can add new asset version');
+    uint index = ds.tokenData[tokenIdentifier].assets.length;
+    ds.tokenData[tokenIdentifier].additionalAssets.push(assetData[0]);
+    ds.tokenData[tokenIdentifier].additionalAssetsContext.push(assetData[1]);
+  }
+
+  function bulkAddSecondaryAsset(uint256 tokenId, string[][] memory assetData) external {
+    for (uint i = 0; i < assetData.length; i++) {
+      addSecondaryAsset(tokenId, assetData[i]);
+    }
   }
 
   function changeVersion(uint256 tokenId, uint256 version) external {
     Storage storage ds = libStorage();
-    ERC721 singularity = ERC721(ds.singularityAddress);
-    require(singularity.ownerOf(tokenId) == msg.sender || getTokenCreator(tokenId) == msg.sender, 'Only creator and owner can change asset');
-    require(version <= ds.tokenData[tokenId].totalVersionCount, 'Out of version bounds');
+    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can change asset');
+    require(version <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
     require(version >= 1, 'Out of version bounds');
-    ds.tokenData[tokenId].currentVersion = version;
+    ds.tokenData[tokenIdentifier].currentVersion = version;
   }
 
   function getCurrentVersion(uint256 tokenId) public view returns (uint256) {
     Storage storage ds = libStorage();
-    return ds.tokenData[tokenId].currentVersion;
+    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    return ds.tokenData[tokenIdentifier].currentVersion;
   }
 
   function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) external {
     Storage storage ds = libStorage();
-    require(ds.tokenData[tokenId].metadata.modifiable[propertyIndex], 'Field not editable');
-    ds.tokenData[tokenId].metadata.value[propertyIndex] = value;
+    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    require(ds.tokenData[tokenIdentifier].metadata.modifiable[propertyIndex], 'Field not editable');
+    ds.tokenData[tokenIdentifier].metadata.value[propertyIndex] = value;
   }
 
   function licenseURI(uint256 tokenId) public view returns (string memory) {
     Storage storage ds = libStorage();
-    return ds.tokenData[tokenId].licenseURI;
+    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    return ds.tokenData[tokenIdentifier].licenseURI;
   }
 
   function tokenURI(uint256 tokenId) public view returns (string memory) {
@@ -264,6 +283,13 @@ library LibStorage {
         );
       }
 
+      string memory animationAsset = "";
+      if (keccak256(abi.encodePacked(ds.tokenData[tokenIdentifier].iFrameAsset)) != keccak256(abi.encodePacked(""))) {
+        animationAsset = string(abi.encodePacked(', "animation_url": "', ds.tokenData[tokenIdentifier].iFrameAsset, '"'));
+      }
+
+      console.log(animationAsset);
+
       string memory encoded = string(
         abi.encodePacked(
           'data:application/json;base64,',
@@ -286,7 +312,9 @@ library LibStorage {
                 ']',
                 ', "additional_assets": [',
                 additionalAssetsList,
-                '] }'
+                ']',
+                animationAsset,
+                '}'
               )
             )
           )

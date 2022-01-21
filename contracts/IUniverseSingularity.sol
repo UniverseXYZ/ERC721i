@@ -45,6 +45,22 @@ interface IPacks is IERC721Enumerable {
   /// @param assetData Asset data [main asset, backup asset, asset title, asset description]
   function addAsset(uint256 tokenId, string[] memory assetData) external;
 
+  /// @notice Allows creator of NFT to add multiple assets
+  /// @param tokenId NFT token ID
+  /// @param assetData Asset data [[main asset, backup asset, asset title, asset description], ...]
+  function bulkAddAsset(uint256 tokenId, string[][] memory assetData) external;
+
+  /// @notice Allows creator of NFT to add another secondary asset
+  /// @param tokenId NFT token ID
+  /// @param assetData Asset data [asset, asset context]
+  function addSecondaryAsset(uint256 tokenId, string[] memory assetData) external;
+
+  /// @notice Allows creator of NFT to add multiple secondary assets
+  /// @param tokenId NFT token ID
+  /// @param assetData Asset data [[asset, asset context], ...]
+  function bulkAddSecondaryAsset(uint256 tokenId, string[][] memory assetData) external;
+
+
   /// @notice Allows creator or owner of NFT to change default displaying asset
   /// @param tokenId NFT token ID
   /// @param version Index of asset (starting at 1)

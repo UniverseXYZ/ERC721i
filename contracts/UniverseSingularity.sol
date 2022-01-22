@@ -52,7 +52,7 @@ contract UniverseSingularity is ERC165, ERC721 {
     uint256 _editions
   ) public returns (uint256) {
     LibStorage.Storage storage ds = LibStorage.libStorage();
-    require(_assets.length == 8, 'Invalid parameters');
+    require(_assets.length == 9, 'Invalid parameters');
 
     LibStorage.mint(_isOnChain, _currentVersion, _assets, _metadataValues, _licenseURI, _fees, _editions);
 
@@ -106,6 +106,11 @@ contract UniverseSingularity is ERC165, ERC721 {
   function licenseURI(uint256 tokenId) public view returns (string memory) {
     require(_exists(tokenId), "Nonexistent token");
     return LibStorage.licenseURI(tokenId);
+  }
+
+  function updateTorrentMagnet(uint256 tokenId, uint256 assetIndex, string memory uri) public { 
+    require(_exists(tokenId), "Nonexistent token");
+    LibStorage.updateTorrentMagnet(tokenId, assetIndex, uri);
   }
 
   function tokenURI(uint256 tokenId) public view override returns (string memory) {

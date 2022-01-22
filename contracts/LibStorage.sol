@@ -50,6 +50,7 @@ library LibStorage {
     string[] assetBackups; // Each backup upload can be toggled as main display asset (e.g. IPFS / ARWEAVE)
     string[] assetTitles; // Title of each core asset (optional)
     string[] assetDescriptions; // Description of each core asset (optional)
+    string[] assetTorrentMagnet; // Torrent magnet link (optional)
     uint256 totalVersionCount; // Total number of existing states
     uint256 currentVersion; // Current existing state
     string[] additionalAssets; // Additional assets provided by minter
@@ -103,7 +104,13 @@ library LibStorage {
     Fee[] memory _fees,
     uint256 _editions
   ) external returns (uint256) {
-    require(_assets[0].length == _assets[1].length && _assets[1].length == _assets[2].length && _assets[2].length == _assets[3].length && _assets[4].length == _assets[5].length, "Invalid assets provided");
+    require(
+      _assets[0].length == _assets[1].length &&
+      _assets[1].length == _assets[2].length &&
+      _assets[2].length == _assets[3].length &&
+      _assets[3].length == _assets[4].length,
+      "Invalid assets provided"
+    );
     require(_currentVersion <= _assets[0].length, "Default version out of bounds");
     Storage storage ds = libStorage();
 
@@ -122,8 +129,8 @@ library LibStorage {
       }
 
       metadata = Metadata({
-        tokenName: _assets[6][0],
-        tokenDescription: _assets[6][1],
+        tokenName: _assets[7][0],
+        tokenDescription: _assets[7][1],
         name: (_metadataValues[0].length > 0) ? _metadataValues[0] : new string[](0),
         value: (_metadataValues[1].length > 0) ? _metadataValues[1] : new string[](0),
         modifiable: modifiables,
@@ -140,7 +147,7 @@ library LibStorage {
       });
     }
 
-    string memory _iFrameAsset = (_assets[7].length == 1) ? _assets[7][0] : "";
+    string memory _iFrameAsset = (_assets[8].length == 1) ? _assets[8][0] : "";
     ds.tokenData[newTokenId] = TokenData({
       tokenCreator: msg.sender,
       isOnChain: _isOnChain,
@@ -150,8 +157,9 @@ library LibStorage {
       assetBackups: _assets[1],
       assetTitles: _assets[2],
       assetDescriptions: _assets[3],
-      additionalAssets: _assets[4],
-      additionalAssetsContext: _assets[5],
+      assetTorrentMagnet: _assets[4],
+      additionalAssets: _assets[5],
+      additionalAssetsContext: _assets[6],
       iFrameAsset: _iFrameAsset,
       totalVersionCount: _assets[0].length,
       currentVersion: _currentVersion
@@ -178,6 +186,7 @@ library LibStorage {
     ds.tokenData[tokenIdentifier].assetBackups.push(assetData[1]);
     ds.tokenData[tokenIdentifier].assetTitles.push(assetData[2]);
     ds.tokenData[tokenIdentifier].assetDescriptions.push(assetData[3]);
+    ds.tokenData[tokenIdentifier].assetTorrentMagnet.push(assetData[4]);
     ds.tokenData[tokenIdentifier].totalVersionCount++;
   }
 
@@ -205,7 +214,7 @@ library LibStorage {
   function changeVersion(uint256 tokenId, uint256 version) external {
     Storage storage ds = libStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can change asset');
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can change asset version');
     require(version <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
     require(version >= 1, 'Out of version bounds');
     ds.tokenData[tokenIdentifier].currentVersion = version;
@@ -220,14 +229,25 @@ library LibStorage {
   function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) external {
     Storage storage ds = libStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(ds.tokenData[tokenIdentifier].metadata.modifiable[propertyIndex], 'Field not editable');
-    ds.tokenData[tokenIdentifier].metadata.value[propertyIndex] = value;
+    require(ds.tokenData[tokenIdentifier].metadata.modifiable[propertyIndex - 1], 'Field not editable');
+    require(propertyIndex <= ds.tokenData[tokenIdentifier].metadata.propertyCount, 'Out of version bounds');
+    require(propertyIndex >= 1, 'Out of version bounds');
+    ds.tokenData[tokenIdentifier].metadata.value[propertyIndex - 1] = value;
   }
 
   function licenseURI(uint256 tokenId) public view returns (string memory) {
     Storage storage ds = libStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
     return ds.tokenData[tokenIdentifier].licenseURI;
+  }
+
+  function updateTorrentMagnet(uint256 tokenId, uint256 assetIndex, string memory uri) external {
+    Storage storage ds = libStorage();
+    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can update');
+    require(assetIndex <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
+    require(assetIndex >= 1, 'Out of version bounds');
+    ds.tokenData[tokenIdentifier].assetTorrentMagnet[assetIndex - 1] = uri;
   }
 
   function tokenURI(uint256 tokenId) public view returns (string memory) {
@@ -246,6 +266,8 @@ library LibStorage {
           ds.tokenData[tokenIdentifier].metadata.name[i],
           '", "value":"',
           ds.tokenData[tokenIdentifier].metadata.value[i],
+          '", "permanent":"',
+          ds.tokenData[tokenIdentifier].metadata.modifiable[i] ? 'false' : 'true',
           '"}',
           i == ds.tokenData[tokenIdentifier].metadata.propertyCount - 1 ? '' : ',')
         );
@@ -263,6 +285,8 @@ library LibStorage {
           ds.tokenData[tokenIdentifier].assets[i],
           '", "backup_asset":"',
           ds.tokenData[tokenIdentifier].assetBackups[i],
+          '", "torrent":"',
+          ds.tokenData[tokenIdentifier].assetTorrentMagnet[i],
           '", "default":"',
           i == ds.tokenData[tokenIdentifier].currentVersion - 1 ? 'true' : 'false',
           '"}',
@@ -287,8 +311,6 @@ library LibStorage {
       if (keccak256(abi.encodePacked(ds.tokenData[tokenIdentifier].iFrameAsset)) != keccak256(abi.encodePacked(""))) {
         animationAsset = string(abi.encodePacked(', "animation_url": "', ds.tokenData[tokenIdentifier].iFrameAsset, '"'));
       }
-
-      console.log(animationAsset);
 
       string memory encoded = string(
         abi.encodePacked(

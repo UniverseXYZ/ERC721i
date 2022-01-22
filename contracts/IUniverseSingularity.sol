@@ -60,7 +60,6 @@ interface IPacks is IERC721Enumerable {
   /// @param assetData Asset data [[asset, asset context], ...]
   function bulkAddSecondaryAsset(uint256 tokenId, string[][] memory assetData) external;
 
-
   /// @notice Allows creator or owner of NFT to change default displaying asset
   /// @param tokenId NFT token ID
   /// @param version Index of asset (starting at 1)
@@ -79,6 +78,12 @@ interface IPacks is IERC721Enumerable {
   /// @notice Returns URI of license of NFT
   /// @param tokenId NFT token ID
   function licenseURI(uint256 tokenId) external view returns (string memory);
+
+  /// @notice Allows creator or owner of NFT to set a torrent magnet link
+  /// @param tokenId NFT token ID
+  /// @param assetIndex Index of asset (starting at 1)
+  /// @param uri Torrent magnet link
+  function updateTorrentMagnet(uint256 tokenId, uint256 assetIndex, string memory uri) external;
 
   /// @notice (If on-chain) Returns base64 encoded JSON of full metadata (else) returns URI
   /// @param tokenId NFT token ID

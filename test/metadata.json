@@ -6,7 +6,8 @@
       ["https://ipfs.io/backupAsset"],
       [""],
       [""],
-      [],
+      [""],
+      [""],
       [],
       [],
       []
@@ -26,6 +27,7 @@
       ["https://ipfs.io/backupAsset", "https://ipfs.io/backupAsset"],
       ["First Asset", "Second Asset"],
       ["First Description", "Second Description"],
+      ["magnet:?xt=urn:btih:firstMagnetURI", "magnet:?xt=urn:btih:secondMagnetURI"],
       ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
       ["Additional Asset 1", "Additional Asset 2"],
       ["animation_url token", "This is the token description of the complex token"],
@@ -89,6 +91,18 @@
         "Eighth Description",
         "Ninth Description",
         "Tenth Description"
+      ],
+      [
+        "magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
       ],
       ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
       ["Additional Asset 1", "Additional Asset 2"],

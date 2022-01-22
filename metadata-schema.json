@@ -9,6 +9,7 @@
       "description": "asset description (optional)",
       "primary_asset": "arweave url",
       "backup_asset": "ipfs url",
+      "torrent": "magnet uri",
       "default": false,
       "iframe": "https://arweave.net/iframe",
       "filetype": "MP4"
@@ -18,6 +19,7 @@
       "description": "asset description (optional)",
       "primary_asset": "arweave url",
       "backup_asset": "ipfs url",
+      "torrent": "magnet uri",
       "default": true,
       "filetype": "OBJ"
     }

@@ -79,7 +79,7 @@ describe("UniverseSingularity", async function() {
       const data = await deployInstance.tokenURI(tokenIdCounter);
       const tokenJSON = base64toJSON(data);
       console.log(tokenJSON);
-      expect(tokenJSON.name).to.equal(metadata.large.assets[6][0])
+      expect(tokenJSON.name).to.equal(metadata.large.assets[7][0])
     });
 
     it("should mint 50 editions", async function() {
@@ -87,7 +87,7 @@ describe("UniverseSingularity", async function() {
       const data = await deployInstance.tokenURI(tokenIdCounter);
       const tokenJSON = base64toJSON(data);
       console.log(tokenJSON);
-      expect(tokenJSON.name).to.equal(metadata.large.assets[6][0])
+      expect(tokenJSON.name).to.equal(metadata.large.assets[7][0])
     });
 
     it("should return licenseURI", async function() {
@@ -100,12 +100,46 @@ describe("UniverseSingularity", async function() {
       expect(data).to.equal(version)
     });
 
+    it("should change version", async function() {
+      let changedVersion = 3;
+      await deployInstance.changeVersion(tokenIdCounter - 20, changedVersion);
+      let data = await deployInstance.getCurrentVersion(tokenIdCounter - 15);
+      expect(data).to.equal(changedVersion);
+      data = await deployInstance.tokenURI(tokenIdCounter - 11);
+      const tokenJSON = base64toJSON(data);
+      expect(tokenJSON.image).to.equal(metadata.large.assets[0][2])
+    });
+
+    it("should set torrent magnet link", async function() {
+      const assetVersion = 3;
+      const magnetLink = 'magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c';
+      await deployInstance.updateTorrentMagnet(tokenIdCounter, assetVersion, magnetLink);
+      const data = await deployInstance.tokenURI(tokenIdCounter);
+      const tokenJSON = base64toJSON(data);
+      console.log('test', tokenJSON);
+      expect(tokenJSON.assets[assetVersion - 1].torrent).to.equal(magnetLink)
+      await expect(deployInstance.updateTorrentMagnet(tokenIdCounter, 11, magnetLink)).to.be.reverted;
+      await expect(deployInstance.updateTorrentMagnet(tokenIdCounter, 0, magnetLink)).to.be.reverted;
+    });
+
+    it("should set new metadata", async function() {
+      const propertyIndex = 3;
+      const value = 'Red';
+      await deployInstance.updateMetadata(tokenIdCounter, propertyIndex, value);
+      const data = await deployInstance.tokenURI(tokenIdCounter);
+      const tokenJSON = base64toJSON(data);
+      expect(tokenJSON.attributes[propertyIndex - 1].value).to.equal(value);
+      await expect(deployInstance.updateMetadata(tokenIdCounter, 0, value)).to.be.reverted;
+      await expect(deployInstance.updateMetadata(tokenIdCounter, 4, value)).to.be.reverted;
+    });
+
     it("should add asset", async function() {
       const assetData = [
         'https://arweave.net/newAsset',
         'https://arweave.net/newAssetBackup',
         'New Asset Title',
-        'New Asset Description'
+        'New Asset Description',
+        'magnet:?xt=urn:btih:yo'
       ]
       await deployInstance.addAsset(tokenIdCounter, assetData);
       let data = await deployInstance.tokenURI(tokenIdCounter - 5);
@@ -118,13 +152,15 @@ describe("UniverseSingularity", async function() {
           'https://arweave.net/bulkAsset',
           'https://arweave.net/bulkAssetBackup',
           'Bulk Asset Title',
-          'Bulk Asset Description'
+          'Bulk Asset Description',
+          'magnet:?xt=urn:btih:yo'
         ],
         [
           'https://arweave.net/bulkAsset2',
           'https://arweave.net/bulkAssetBackup2',
           'Bulk Asset Title 2',
-          'Bulk Asset Description 2'
+          'Bulk Asset Description 2',
+          'magnet:?xt=urn:btih:yo'
         ]
       ]
 
@@ -132,7 +168,7 @@ describe("UniverseSingularity", async function() {
       data = await deployInstance.tokenURI(tokenIdCounter - 49);
       tokenJSON = base64toJSON(data);
       lastAsset = tokenJSON.assets[tokenJSON.assets.length - 2];
-      expect(lastAsset.name).to.equal('Bulk Asset Title')
+      expect(lastAsset.name).to.equal('Bulk Asset Title');
       lastAsset = tokenJSON.assets[tokenJSON.assets.length - 1];
       expect(lastAsset.description).to.equal('Bulk Asset Description 2');
     });

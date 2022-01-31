@@ -10,11 +10,10 @@ describe("UniverseSingularity", async function() {
   const collectionName = 'Universe Singularity Tokens';
   const collectionSymbol = 'XYZTOKEN';
 
-  const randomWallet1 = ethers.Wallet.createRandom();
-  const randomWallet2 = ethers.Wallet.createRandom();
-  const feeSplit1 = 1000;
-  const feeSplit2 = 500;
-
+  let now = Math.trunc(new Date().getTime() / 1000);
+  let newDate = Math.trunc(new Date().getTime() / 1000);
+  const hour = 3600;
+  const day = hour * 24;
   let tokenIdCounter = 0;
 
   let deployInstance;
@@ -37,10 +36,18 @@ describe("UniverseSingularity", async function() {
     await deployInstance.deployed();
   });
   
-  describe("BASIC TOKEN TESTS", async function() {
+  await describe("BASIC TOKEN TESTS", async function() {
+    const feeTop = 5000;
+    const feeBottom = 1000;
+    const end1 = now + day * 4;
+    const end2 = now + day * 11;
+    const fees = [
+      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 1, feeTop, feeBottom, now, end1],
+      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 1, feeBottom, feeTop, now, end2]
+    ];
     it("should mint one", async function() {
       const tokenData = metadata.basic;
-      await deployInstance.mint(tokenData.isOnChain, 1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees, tokenData.editions);
+      await deployInstance.mint(tokenData.isOnChain, 1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
       tokenIdCounter++;
     });
 
@@ -49,36 +56,61 @@ describe("UniverseSingularity", async function() {
       expect(data).to.equal(metadata.basic.assets[0][0])
     });
 
-    it("should decrease in royalty", async function() {
-      // await ethers.provider.send('evm_setNextBlockTimestamp', [saleStartTime2]);
-      // await ethers.provider.send('evm_mine');
+    it("should change in royalty", async function() {
+      await ethers.provider.send('evm_setNextBlockTimestamp', [now + day * 2]);
+      await ethers.provider.send('evm_mine');
       const data = await deployInstance.getFeeBps(tokenIdCounter);
+      expect(data[0].toNumber()).to.equal(feeTop - (feeTop - feeBottom) * (2/4));
+      expect(data[1].toNumber()).to.equal(Math.ceil(feeBottom + (feeTop - feeBottom) * (2/11)));
     });
   });
 
-  describe("ANIMATION_URL TOKEN TESTS", async function() {
+  await describe("ANIMATION_URL TOKEN TESTS", async function() {
+    const feeTop = 5000;
+    const feeBottom = 1000;
+    const fees = [
+      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 0, feeTop, 0, 0, 0],
+      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 0, feeBottom, 0, 0, 0]
+    ]
+
     it("should mint one", async function() {
       const tokenData = metadata.animation;
-      await deployInstance.mint(tokenData.isOnChain, 1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees, tokenData.editions);
+      await deployInstance.mint(tokenData.isOnChain, 1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
       tokenIdCounter++;
       const data = await deployInstance.tokenURI(2);
       const tokenJSON = base64toJSON(data);
-      console.log(tokenJSON);
+      // console.log(tokenJSON);
+    });
+
+    it("should change in royalty", async function() {
+      await ethers.provider.send('evm_setNextBlockTimestamp', [now + day * 10]);
+      await ethers.provider.send('evm_mine');
+      const data = await deployInstance.getFeeBps(tokenIdCounter);
+      expect(data[0].toNumber()).to.equal(feeTop);
+      expect(data[1].toNumber()).to.equal(feeBottom);
     });
   })
 
-  describe("ONCHAIN TOKEN TESTS", async function() {
+  await describe("ONCHAIN TOKEN TESTS", async function() {
+    const feeTop = 500;
+    const feeBottom = 100;
+    const end1 = now + day * 20;
+    const end2 = now + day * 50;
     let version = 8;
     it("should mint one", async function() {
+      const fees = [
+        ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 2, feeTop, feeBottom, now, end1],
+        ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 2, feeBottom, feeTop, now, end2]
+      ];
       const tokenData = metadata.large;
-      await deployInstance.mint(tokenData.isOnChain, version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees, tokenData.editions);
+      await deployInstance.mint(tokenData.isOnChain, version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
     });
   
     it("should return tokenURI", async function() {
       tokenIdCounter++;
       const data = await deployInstance.tokenURI(tokenIdCounter);
       const tokenJSON = base64toJSON(data);
-      console.log(tokenJSON);
+      // console.log(tokenJSON);
       expect(tokenJSON.name).to.equal(metadata.large.assets[7][0])
     });
 
@@ -86,7 +118,7 @@ describe("UniverseSingularity", async function() {
       tokenIdCounter += 49;
       const data = await deployInstance.tokenURI(tokenIdCounter);
       const tokenJSON = base64toJSON(data);
-      console.log(tokenJSON);
+      // console.log(tokenJSON);
       expect(tokenJSON.name).to.equal(metadata.large.assets[7][0])
     });
 
@@ -116,7 +148,7 @@ describe("UniverseSingularity", async function() {
       await deployInstance.updateTorrentMagnet(tokenIdCounter, assetVersion, magnetLink);
       const data = await deployInstance.tokenURI(tokenIdCounter);
       const tokenJSON = base64toJSON(data);
-      console.log('test', tokenJSON);
+      // console.log('test', tokenJSON);
       expect(tokenJSON.assets[assetVersion - 1].torrent).to.equal(magnetLink)
       await expect(deployInstance.updateTorrentMagnet(tokenIdCounter, 11, magnetLink)).to.be.reverted;
       await expect(deployInstance.updateTorrentMagnet(tokenIdCounter, 0, magnetLink)).to.be.reverted;
@@ -202,6 +234,30 @@ describe("UniverseSingularity", async function() {
       expect(lastAsset.asset).to.equal('https://arweave.net/bulkSecondaryAssetNew')
       lastAsset = tokenJSON.additional_assets[tokenJSON.additional_assets.length - 1];
       expect(lastAsset.context).to.equal('New Bulk Secondary Asset 2');
+    });
+
+    it("should not change in royalty", async function() {
+      await ethers.provider.send('evm_setNextBlockTimestamp', [now + day * 15]);
+      await ethers.provider.send('evm_mine');
+      let data = await deployInstance.getFeeBps(tokenIdCounter);
+      expect(data[0].toNumber()).to.equal(feeTop);
+      expect(data[1].toNumber()).to.equal(feeBottom);
+    });
+
+    it("should change first royalty", async function() {
+      await ethers.provider.send('evm_setNextBlockTimestamp', [now + day * 30]);
+      await ethers.provider.send('evm_mine');
+      data = await deployInstance.getFeeBps(tokenIdCounter);
+      expect(data[0].toNumber()).to.equal(feeBottom);
+      expect(data[1].toNumber()).to.equal(feeBottom);
+    });
+
+    it("should change last royalty", async function() {
+      await ethers.provider.send('evm_setNextBlockTimestamp', [now + day * 60]);
+      await ethers.provider.send('evm_mine');
+      data = await deployInstance.getFeeBps(tokenIdCounter);
+      expect(data[0].toNumber()).to.equal(feeBottom);
+      expect(data[1].toNumber()).to.equal(feeTop);
     });
 
     // version = 50;

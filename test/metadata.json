@@ -2,12 +2,12 @@
   "basic": {
     "isOnChain": false,
     "assets": [
+      ["token name", "token description"],
       ["https://arweave.net/firstAsset"],
       ["https://ipfs.io/backupAsset"],
-      [""],
-      [""],
-      [""],
-      [""],
+      ["Asset Title"],
+      ["Asset Description"],
+      ["magnet:?xt=urn:btih:firstMagnetURI"],
       [],
       [],
       []
@@ -23,6 +23,7 @@
   "animation": {
     "isOnChain": true,
     "assets": [
+      ["animation_url token", "This is the token description of the complex token"],
       ["https://arweave.net/firstAsset", "https://arweave.net/secondAsset"],
       ["https://ipfs.io/backupAsset", "https://ipfs.io/backupAsset"],
       ["First Asset", "Second Asset"],
@@ -30,7 +31,6 @@
       ["magnet:?xt=urn:btih:firstMagnetURI", "magnet:?xt=urn:btih:secondMagnetURI"],
       ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
       ["Additional Asset 1", "Additional Asset 2"],
-      ["animation_url token", "This is the token description of the complex token"],
       ["https://google.com"]
     ],
     "metadata": [[],[],[]],
@@ -44,6 +44,7 @@
   "large": {
     "isOnChain": true,
     "assets": [
+      ["Complex token", "This is the token description of the complex token"],
       [
         "https://arweave.net/firstAsset",
         "https://arweave.net/secondAsset",
@@ -106,7 +107,6 @@
       ],
       ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
       ["Additional Asset 1", "Additional Asset 2"],
-      ["Complex token", "This is the token description of the complex token"],
       []
     ],
     "metadata": [

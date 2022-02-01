@@ -18,7 +18,6 @@ interface IPacks is IERC721Enumerable {
   function transferDAOownership(address payable _daoAddress) external;
 
   /// @notice Creates a new collection / drop (first collection is created via constructor)
-  /// @param _isOnChain Toggle to store metadata on the blockchain
   /// @param _currentVersion Index (starting from 1) of default asset to show
   /// @param _assets Asset data [[main assets], [backup assets], [asset titles], [asset descriptions], [additional assets], [text context]]
   /// @param _metadataValues Property values
@@ -27,7 +26,6 @@ interface IPacks is IERC721Enumerable {
   /// above variable types: 0 - no decay, 1 - linear, 2 - timestamp change / expiration
   /// @param _editions Number of identical NFTs to mint
   function mint(
-    bool _isOnChain,
     uint256 _currentVersion,
     string[][] memory _assets,
     string[][] memory _metadataValues,

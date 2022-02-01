@@ -47,13 +47,15 @@ describe("UniverseSingularity", async function() {
     ];
     it("should mint one", async function() {
       const tokenData = metadata.basic;
-      await deployInstance.mint(tokenData.isOnChain, 1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
+      await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
       tokenIdCounter++;
     });
 
     it("should return tokenURI", async function() {
       const data = await deployInstance.tokenURI(tokenIdCounter);
-      expect(data).to.equal(metadata.basic.assets[0][0])
+      const tokenJSON = base64toJSON(data);
+      // console.log(tokenJSON);
+      expect(tokenJSON.name).to.equal(metadata.basic.assets[0][0])
     });
 
     it("should change in royalty", async function() {
@@ -75,7 +77,7 @@ describe("UniverseSingularity", async function() {
 
     it("should mint one", async function() {
       const tokenData = metadata.animation;
-      await deployInstance.mint(tokenData.isOnChain, 1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
+      await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
       tokenIdCounter++;
       const data = await deployInstance.tokenURI(2);
       const tokenJSON = base64toJSON(data);
@@ -103,7 +105,7 @@ describe("UniverseSingularity", async function() {
         ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 2, feeBottom, feeTop, now, end2]
       ];
       const tokenData = metadata.large;
-      await deployInstance.mint(tokenData.isOnChain, version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
+      await deployInstance.mint(version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
     });
   
     it("should return tokenURI", async function() {
@@ -111,7 +113,7 @@ describe("UniverseSingularity", async function() {
       const data = await deployInstance.tokenURI(tokenIdCounter);
       const tokenJSON = base64toJSON(data);
       // console.log(tokenJSON);
-      expect(tokenJSON.name).to.equal(metadata.large.assets[7][0])
+      expect(tokenJSON.name).to.equal(metadata.large.assets[0][0])
     });
 
     it("should mint 50 editions", async function() {
@@ -119,7 +121,7 @@ describe("UniverseSingularity", async function() {
       const data = await deployInstance.tokenURI(tokenIdCounter);
       const tokenJSON = base64toJSON(data);
       // console.log(tokenJSON);
-      expect(tokenJSON.name).to.equal(metadata.large.assets[7][0])
+      expect(tokenJSON.name).to.equal(metadata.large.assets[0][0])
     });
 
     it("should return licenseURI", async function() {
@@ -139,7 +141,7 @@ describe("UniverseSingularity", async function() {
       expect(data).to.equal(changedVersion);
       data = await deployInstance.tokenURI(tokenIdCounter - 11);
       const tokenJSON = base64toJSON(data);
-      expect(tokenJSON.image).to.equal(metadata.large.assets[0][2])
+      expect(tokenJSON.image).to.equal(metadata.large.assets[1][2])
     });
 
     it("should set torrent magnet link", async function() {

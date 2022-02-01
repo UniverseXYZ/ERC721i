@@ -43,7 +43,6 @@ library LibStorage {
 
   struct TokenData {
     address tokenCreator; // User who minted
-    bool isOnChain; // Flag for onchain token data
     Metadata metadata;
     string licenseURI; // Usage rights for token
     string[] assets; // Each asset in array is a version
@@ -96,7 +95,6 @@ library LibStorage {
   }
 
   function mint(
-    bool _isOnChain,
     uint256 _currentVersion,
     string[][] memory _assets, // ordered lists: [0: [main assets], 1: [backup assets], 2: [asset titles], 3: [asset descriptions], 4: [additional assets], 5: [text context], 6: [token name, desc], 7: [iFrame asset (optional)]]
     string[][] memory _metadataValues,
@@ -105,13 +103,13 @@ library LibStorage {
     uint256 _editions
   ) external returns (uint256) {
     require(
-      _assets[0].length == _assets[1].length &&
       _assets[1].length == _assets[2].length &&
       _assets[2].length == _assets[3].length &&
-      _assets[3].length == _assets[4].length,
+      _assets[3].length == _assets[4].length &&
+      _assets[4].length == _assets[5].length,
       "Invalid assets provided"
     );
-    require(_currentVersion <= _assets[0].length, "Default version out of bounds");
+    require(_currentVersion <= _assets[1].length, "Default version out of bounds");
     Storage storage ds = libStorage();
 
     ds._tokenIdCounter.increment();
@@ -119,49 +117,37 @@ library LibStorage {
     ds.editions[newTokenId] = _editions;
 
     Metadata memory metadata;
-    if (_isOnChain) {
-      require (_metadataValues[0].length == _metadataValues[1].length, "Invalid metadata provided");
+    require (_metadataValues[0].length == _metadataValues[1].length, "Invalid metadata provided");
 
-      uint256 propertyCount = _metadataValues[0].length;
-      bool[] memory modifiables = new bool[](_metadataValues.length);
-      for (uint256 i = 0; i < propertyCount; i++) {
-        modifiables[i] = (keccak256(abi.encodePacked((_metadataValues[2][i]))) == keccak256(abi.encodePacked(('1')))); // 1 is modifiable, 0 is permanent
-      }
-
-      metadata = Metadata({
-        tokenName: _assets[7][0],
-        tokenDescription: _assets[7][1],
-        name: (_metadataValues[0].length > 0) ? _metadataValues[0] : new string[](0),
-        value: (_metadataValues[1].length > 0) ? _metadataValues[1] : new string[](0),
-        modifiable: modifiables,
-        propertyCount: propertyCount
-      });
-    } else {
-      metadata = Metadata({
-        tokenName: '',
-        tokenDescription: '',
-        name: new string[](0),
-        value: new string[](0),
-        modifiable: new bool[](0),
-        propertyCount: 0
-      });
+    uint256 propertyCount = _metadataValues[0].length;
+    bool[] memory modifiables = new bool[](_metadataValues.length);
+    for (uint256 i = 0; i < propertyCount; i++) {
+      modifiables[i] = (keccak256(abi.encodePacked((_metadataValues[2][i]))) == keccak256(abi.encodePacked(('1')))); // 1 is modifiable, 0 is permanent
     }
+
+    metadata = Metadata({
+      tokenName: _assets[0][0],
+      tokenDescription: _assets[0][1],
+      name: (_metadataValues[1].length > 0) ? _metadataValues[1] : new string[](0),
+      value: (_metadataValues[2].length > 0) ? _metadataValues[2] : new string[](0),
+      modifiable: modifiables,
+      propertyCount: propertyCount
+    });
 
     string memory _iFrameAsset = (_assets[8].length == 1) ? _assets[8][0] : "";
     ds.tokenData[newTokenId] = TokenData({
       tokenCreator: msg.sender,
-      isOnChain: _isOnChain,
       metadata: metadata,
       licenseURI: _licenseURI,
-      assets: _assets[0],
-      assetBackups: _assets[1],
-      assetTitles: _assets[2],
-      assetDescriptions: _assets[3],
-      assetTorrentMagnet: _assets[4],
-      additionalAssets: _assets[5],
-      additionalAssetsContext: _assets[6],
+      assets: _assets[1],
+      assetBackups: _assets[2],
+      assetTitles: _assets[3],
+      assetDescriptions: _assets[4],
+      assetTorrentMagnet: _assets[5],
+      additionalAssets: (_assets[6].length > 0) ? _assets[6] : new string[](0),
+      additionalAssetsContext: (_assets[7].length > 0) ? _assets[7] : new string[](0),
       iFrameAsset: _iFrameAsset,
-      totalVersionCount: _assets[0].length,
+      totalVersionCount: _assets[1].length,
       currentVersion: _currentVersion
     });
 
@@ -255,9 +241,7 @@ library LibStorage {
 
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
 
-    if (!ds.tokenData[tokenIdentifier].isOnChain) {
-      return ds.tokenData[tokenIdentifier].assets[ds.tokenData[tokenIdentifier].currentVersion - 1];
-    } else {
+
       string memory encodedMetadata = '';
       for (uint i = 0; i < ds.tokenData[tokenIdentifier].metadata.propertyCount; i++) {
         encodedMetadata = string(abi.encodePacked(
@@ -344,7 +328,6 @@ library LibStorage {
       );
 
       return encoded;
-    }
   }
 
   function _registerFees(uint256 _tokenId, Fee[] memory _fees) internal returns (bool) {

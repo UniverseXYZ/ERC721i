@@ -43,7 +43,6 @@ contract UniverseSingularity is ERC165, ERC721 {
   }
 
   function mint(
-    bool _isOnChain,
     uint256 _currentVersion,
     string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [asset titles], [asset descriptions], [additional assets], [text context]]
     string[][] memory _metadataValues,
@@ -54,7 +53,7 @@ contract UniverseSingularity is ERC165, ERC721 {
     LibStorage.Storage storage ds = LibStorage.libStorage();
     require(_assets.length == 9, 'Invalid parameters');
 
-    LibStorage.mint(_isOnChain, _currentVersion, _assets, _metadataValues, _licenseURI, _fees, _editions);
+    LibStorage.mint(_currentVersion, _assets, _metadataValues, _licenseURI, _fees, _editions);
 
     for (uint256 i = 0; i < _editions; i++) {
       uint256 newTokenId = ds._tokenIdCounter.current();

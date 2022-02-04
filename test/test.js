@@ -11,11 +11,11 @@ describe("UniverseSingularity", async function() {
   const collectionSymbol = 'XYZTOKEN';
 
   let now = Math.trunc(new Date().getTime() / 1000);
-  let newDate = Math.trunc(new Date().getTime() / 1000);
   const hour = 3600;
   const day = hour * 24;
   let tokenIdCounter = 0;
 
+  const randomWallet = ethers.Wallet.createRandom().address;
   let deployInstance;
 
   before(async () => {
@@ -47,7 +47,7 @@ describe("UniverseSingularity", async function() {
     ];
     it("should mint one", async function() {
       const tokenData = metadata.basic;
-      await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
+      await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions, deployInstance.address);
       tokenIdCounter++;
     });
 
@@ -77,9 +77,10 @@ describe("UniverseSingularity", async function() {
 
     it("should mint one", async function() {
       const tokenData = metadata.animation;
-      await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
+      await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions, randomWallet);
       tokenIdCounter++;
-      const data = await deployInstance.tokenURI(2);
+      const data = await deployInstance.tokenURI(tokenIdCounter);
+      expect(await deployInstance.ownerOf(tokenIdCounter)).to.equal(randomWallet);
       const tokenJSON = base64toJSON(data);
       // console.log(tokenJSON);
     });
@@ -105,7 +106,7 @@ describe("UniverseSingularity", async function() {
         ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 2, feeBottom, feeTop, now, end2]
       ];
       const tokenData = metadata.large;
-      await deployInstance.mint(version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions);
+      await deployInstance.mint(version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions, randomWallet);
     });
   
     it("should return tokenURI", async function() {

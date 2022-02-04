@@ -48,16 +48,18 @@ contract UniverseSingularity is ERC165, ERC721Consumable {
     string[][] memory _metadataValues,
     string memory _licenseURI,
     LibStorage.Fee[] memory _fees,
-    uint256 _editions
-  ) public returns (uint256) {
+    uint256 _editions,
+    address _mintTo
+  ) public {
     LibStorage.Storage storage ds = LibStorage.libStorage();
     require(_assets.length == 9, 'Invalid parameters');
 
     LibStorage.mint(_currentVersion, _assets, _metadataValues, _licenseURI, _fees, _editions);
 
+    address to = address(_mintTo) == address(0) ? msg.sender : _mintTo;
     for (uint256 i = 0; i < _editions; i++) {
       uint256 newTokenId = ds._tokenIdCounter.current();
-      _mint(msg.sender, newTokenId);
+      _mint(to, newTokenId);
       if (i != (_editions - 1)) ds._tokenIdCounter.increment();
     }
   }
@@ -134,7 +136,8 @@ contract UniverseSingularity is ERC165, ERC721Consumable {
 
   // Failsafe withdraw if any ETH is sent to contract
   function withdraw(address _to, uint amount) public onlyDAO {
-    payable(_to).call{value:amount, gas:200000}("");
+    (bool success, ) = payable(_to).call{value:amount, gas:200000}("");
+    require(success, "Withdraw failed");
   }
 
   // Failsafe withdraw if any ERC20 is sent to contract

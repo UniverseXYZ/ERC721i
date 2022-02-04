@@ -100,7 +100,7 @@ library LibStorage {
     string memory _licenseURI,
     Fee[] memory _fees,
     uint256 _editions
-  ) external returns (uint256) {
+  ) external {
     require(
       _assets[1].length == _assets[2].length &&
       _assets[2].length == _assets[3].length &&
@@ -166,7 +166,6 @@ library LibStorage {
     Storage storage ds = libStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
     require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator of token can add new asset version');
-    uint index = ds.tokenData[tokenIdentifier].assets.length;
     ds.tokenData[tokenIdentifier].assets.push(assetData[0]);
     ds.tokenData[tokenIdentifier].assetBackups.push(assetData[1]);
     ds.tokenData[tokenIdentifier].assetTitles.push(assetData[2]);
@@ -185,7 +184,6 @@ library LibStorage {
     Storage storage ds = libStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
     require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator of token can add new asset version');
-    uint index = ds.tokenData[tokenIdentifier].assets.length;
     ds.tokenData[tokenIdentifier].additionalAssets.push(assetData[0]);
     ds.tokenData[tokenIdentifier].additionalAssetsContext.push(assetData[1]);
   }
@@ -329,7 +327,7 @@ library LibStorage {
       return encoded;
   }
 
-  function _registerFees(uint256 _tokenId, Fee[] memory _fees) internal returns (bool) {
+  function _registerFees(uint256 _tokenId, Fee[] memory _fees) internal {
     Storage storage ds = libStorage();
     require(_fees.length <= 10, "No more than 5 recipients");
     address[] memory recipients = new address[](_fees.length);
@@ -394,6 +392,7 @@ library LibStorage {
   }
 
   function withdraw(address _to, uint amount) public onlyDAO {
-    payable(_to).call{value:amount, gas:200000}("");
+    (bool success, ) = payable(_to).call{value:amount, gas:200000}("");
+    require(success, "Withdraw failed");
   }
 }

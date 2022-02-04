@@ -25,13 +25,15 @@ interface IPacks is IERC721Enumerable, IERC721Consumable {
   /// @param _fees Royalty parameters [[address, variable type, start BPS, end BPS, start blocktime, end blocktime]]
   /// above variable types: 0 - no decay, 1 - linear, 2 - timestamp change / expiration
   /// @param _editions Number of identical NFTs to mint
+  /// @param _mintTo Recipient of NFT
   function mint(
     uint256 _currentVersion,
     string[][] memory _assets,
     string[][] memory _metadataValues,
     string memory _licenseURI,
     LibStorage.Fee[] memory _fees,
-    uint256 _editions
+    uint256 _editions,
+    address _mintTo
   ) external returns (uint256);
 
   /// @notice Returns creator address of NFT

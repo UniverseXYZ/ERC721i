@@ -2,13 +2,12 @@
 // Written by Tim Kang <> illestrater
 // Product by universe.xyz
 
-pragma solidity >=0.6.0 <0.8.0;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.11;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "hardhat/console.sol";
 import 'base64-sol/base64.sol';
 

@@ -2,16 +2,16 @@
 // Written by Tim Kang <> illestrater
 // Product by universe.xyz
 
-pragma solidity >=0.6.0 <0.8.0;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.11;
 
-import "./LibStorage.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Enumerable.sol";
+import "../LibStorage.sol";
+import "./IERC721Consumable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 /// @title Creators can mint robust NFTs that have multiple assets, on-chain metadata, and dynamic royalties
 /// @notice This interface should be implemented by the UniverseSingularity contract
 /// @dev This interface should be implemented by the UniverseSingularity contract
-interface IPacks is IERC721Enumerable {
+interface IPacks is IERC721Enumerable, IERC721Consumable {
 
   /// @notice Transfers contract ownership to DAO / different address
   /// @param _daoAddress The new address

@@ -2,31 +2,31 @@
 // Written by Tim Kang <> illestrater
 // Product by universe.xyz
 
-pragma solidity >=0.6.0 <0.8.0;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.11;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/introspection/ERC165.sol";
-import "./IUniverseSingularity.sol";
+import "./ERC721Consumable.sol";
+// import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "./interfaces/IUniverseSingularity.sol";
 import "./LibStorage.sol";
 
-contract UniverseSingularity is ERC165, ERC721 {
+contract UniverseSingularity is ERC165, ERC721Consumable {
   using SafeMath for uint256;
   using Counters for Counters.Counter;
 
   constructor(string memory name, string memory symbol) ERC721(name, symbol) {
     LibStorage.Storage storage ds = LibStorage.libStorage();
     ds.singularityAddress = address(this);
-    ds.daoAddress = msg.sender;
+    ds.daoAddress = payable(msg.sender);
   }
 
   bytes4 private constant _INTERFACE_ID_ROYALTIES_RARIBLE = 0xb7799584;
   bytes4 private constant _INTERFACE_ID_ROYALTIES_EIP2981 = 0x2a55205a;
 
-  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, ERC721Consumable) returns (bool) {
     return interfaceId == _INTERFACE_ID_ROYALTIES_RARIBLE || interfaceId == _INTERFACE_ID_ROYALTIES_EIP2981 || super.supportsInterface(interfaceId);
   }
 

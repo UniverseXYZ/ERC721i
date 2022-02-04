@@ -1,5 +1,5 @@
 {
-  "name": "lootbox",
+  "name": "erc721i",
   "author": "Tim Kang / illestrater <tim@universe.xyz> (https://twitter.com/illestrater_)",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@nomiclabs/hardhat-etherscan": "^2.1.6",
-    "@openzeppelin/contracts": "^3.4.1",
+    "@openzeppelin/contracts": "^4.4.2",
     "base64-sol": "^1.0.1",
     "chai": "^4.3.4",
     "dotenv": "^10.0.0",

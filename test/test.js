@@ -11,7 +11,6 @@ describe("UniverseSingularity", async function() {
   const collectionSymbol = 'XYZTOKEN';
 
   let now = Math.trunc(new Date().getTime() / 1000);
-  let newDate = Math.trunc(new Date().getTime() / 1000);
   const hour = 3600;
   const day = hour * 24;
   let tokenIdCounter = 0;
@@ -19,15 +18,7 @@ describe("UniverseSingularity", async function() {
   let deployInstance;
 
   before(async () => {
-    const LibStorage = await hre.ethers.getContractFactory("LibStorage");
-    const libraryInstance = await LibStorage.deploy();
-    await libraryInstance.deployed();
-
-    const UniverseSingularity = await ethers.getContractFactory("UniverseSingularity", {
-      libraries: {
-        LibStorage: libraryInstance.address
-      },
-    });
+    const UniverseSingularity = await ethers.getContractFactory("UniverseSingularity");
 
     deployInstance = await UniverseSingularity.deploy(
       collectionName,

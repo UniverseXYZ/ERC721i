@@ -5,7 +5,8 @@
 pragma solidity >=0.6.0 <0.8.0;
 pragma experimental ABIEncoderV2;
 
-import "./LibStorage.sol";
+import "./ERC721I.sol";
+import "./DynamicRoyalties.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Enumerable.sol";
 
 /// @title Creators can mint robust NFTs that have multiple assets, on-chain metadata, and dynamic royalties
@@ -30,7 +31,7 @@ interface IPacks is IERC721Enumerable {
     string[][] memory _assets,
     string[][] memory _metadataValues,
     string memory _licenseURI,
-    LibStorage.Fee[] memory _fees,
+    DynamicRoyalties.Fee[] memory _fees,
     uint256 _editions
   ) external returns (uint256);
 

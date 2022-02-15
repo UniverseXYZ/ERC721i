@@ -2,14 +2,14 @@
 // Written by Tim Kang <> illestrater
 // Product by universe.xyz
 
-pragma solidity >=0.6.0 <0.8.0;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.11;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "hardhat/console.sol";
 
 contract DynamicRoyalties {
   mapping (uint256 => Fee[]) fees;
+  mapping (uint256 => uint256) editionedPointers; // Points to metadata of NFT editions
   address contractAddress;
 
   event SecondarySaleFees(
@@ -36,8 +36,13 @@ contract DynamicRoyalties {
     _;
   }
 
-  function _registerFees(uint256 _tokenId, Fee[] memory _fees) public onlyContract() returns (bool) {
+  function _registerFees(uint256 _tokenId, Fee[] memory _fees, uint256 _editions) public onlyContract() returns (bool) {
     require(_fees.length <= 10, "No more than 5 recipients");
+
+    for (uint256 i = 0; i < _editions; i++) {
+      editionedPointers[_tokenId + i] = _tokenId;
+    }
+
     address[] memory recipients = new address[](_fees.length);
     uint256[] memory bps = new uint256[](_fees.length);
     uint256 sum = 0;
@@ -56,7 +61,8 @@ contract DynamicRoyalties {
   }
 
   function getFeeRecipients(uint256 id) public view returns (address payable[] memory) {
-    Fee[] memory _fees = fees[id];
+    uint256 tokenIdentifier = (editionedPointers[id] > 0) ? editionedPointers[id] : id;
+    Fee[] memory _fees = fees[tokenIdentifier];
     address payable[] memory result = new address payable[](_fees.length);
     for (uint i = 0; i < _fees.length; i++) {
       result[i] = _fees[i].recipient;
@@ -65,8 +71,8 @@ contract DynamicRoyalties {
   }
 
   function getFeeBps(uint256 id) public view returns (uint[] memory) {
-    console.log(id);
-    Fee[] memory _fees = fees[id];
+    uint256 tokenIdentifier = (editionedPointers[id] > 0) ? editionedPointers[id] : id;
+    Fee[] memory _fees = fees[tokenIdentifier];
     uint[] memory result = new uint[](_fees.length);
     for (uint i = 0; i < _fees.length; i++) {
       if (_fees[i].decayType == 0) {
@@ -91,10 +97,11 @@ contract DynamicRoyalties {
   }
 
   function royaltyInfo(uint256 tokenId, uint256 value) public view returns (address recipient, uint256 amount) {
-    address payable[] memory rec = getFeeRecipients(tokenId);
+    uint256 tokenIdentifier = (editionedPointers[tokenId] > 0) ? editionedPointers[tokenId] : tokenId;
+    address payable[] memory rec = getFeeRecipients(tokenIdentifier);
     require(rec.length <= 1, "More than 1 royalty recipient");
 
     if (rec.length == 0) return (address(this), 0);
-    return (rec[0], getFeeBps(tokenId)[0] * value / 10000);
+    return (rec[0], getFeeBps(tokenIdentifier)[0] * value / 10000);
   }
 }

@@ -18,9 +18,9 @@ describe("UniverseSingularity", async function() {
   let deployInstance;
 
   before(async () => {
-    const UniverseSingularity = await ethers.getContractFactory("UniverseSingularity");
+    const ERC721I = await ethers.getContractFactory("ERC721I");
 
-    deployInstance = await UniverseSingularity.deploy(
+    deployInstance = await ERC721I.deploy(
       collectionName,
       collectionSymbol,
     );

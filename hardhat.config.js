@@ -22,7 +22,7 @@ task("accounts", "Prints the list of accounts", async () => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.7.3",
+  solidity: "0.8.11",
   settings: {
     optimizer: {
       enabled: true,
@@ -31,14 +31,18 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: true
+      forking: {
+        url: `https://eth-mainnet.alchemyapi.io/v2/${ process.env.ALCHEMY_KEY }`,
+      },
+      allowUnlimitedContractSize: false
     },
-    ropsten: {
-      url: `https://ropsten.infura.io/v3/${ process.env.INFURA_KEY }`,
+    mainnet: {
+      url: `https://eth-mainnet.alchemyapi.io/v2/${ process.env.ALCHEMY_KEY }`,
       accounts: [`0x${ process.env.MM_PRIVATE_KEY }`],
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${ process.env.INFURA_KEY }`,
+      // url: `https://eth-rinkeby.alchemyapi.io/v2/${ process.env.ALCHEMY_RINKEBY }`,
       accounts: [`0x${ process.env.MM_PRIVATE_KEY }`],
     },
   },

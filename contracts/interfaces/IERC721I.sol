@@ -2,12 +2,11 @@
 // Written by Tim Kang <> illestrater
 // Product by universe.xyz
 
-pragma solidity >=0.6.0 <0.8.0;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.11;
 
-import "./ERC721I.sol";
-import "./DynamicRoyalties.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Enumerable.sol";
+import "../ERC721ICore.sol";
+import "../DynamicRoyalties.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 /// @title Creators can mint robust NFTs that have multiple assets, on-chain metadata, and dynamic royalties
 /// @notice This interface should be implemented by the UniverseSingularity contract

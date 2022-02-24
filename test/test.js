@@ -24,7 +24,7 @@ describe("UniverseSingularity", async function() {
     const libraryInstance = await ERC721iCore.deploy();
     await libraryInstance.deployed();
 
-    const UniverseSingularity = await ethers.getContractFactory("UniverseSingularity", {
+    const UniverseSingularity = await ethers.getContractFactory("ERC721i", {
       libraries: {
         ERC721iCore: libraryInstance.address
       },

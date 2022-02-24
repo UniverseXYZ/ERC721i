@@ -5,13 +5,12 @@
 pragma solidity 0.8.11;
 
 import "../ERC721iCore.sol";
-import "./IERC721Consumable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 /// @title Creators can mint robust NFTs that have multiple assets, on-chain metadata, and dynamic royalties
 /// @notice This interface should be implemented by the UniverseSingularity contract
 /// @dev This interface should be implemented by the UniverseSingularity contract
-interface IPacks is IERC721Enumerable, IERC721Consumable {
+interface IERC721i is IERC721Enumerable {
 
   /// @notice Transfers contract ownership to DAO / different address
   /// @param _daoAddress The new address
@@ -25,15 +24,13 @@ interface IPacks is IERC721Enumerable, IERC721Consumable {
   /// @param _fees Royalty parameters [[address, variable type, start BPS, end BPS, start blocktime, end blocktime]]
   /// above variable types: 0 - no decay, 1 - linear, 2 - timestamp change / expiration
   /// @param _editions Number of identical NFTs to mint
-  /// @param _mintTo Recipient of NFT
   function mint(
     uint256 _currentVersion,
     string[][] memory _assets,
     string[][] memory _metadataValues,
     string memory _licenseURI,
     ERC721iCore.Fee[] memory _fees,
-    uint256 _editions,
-    address _mintTo
+    uint256 _editions
   ) external returns (uint256);
 
   /// @notice Returns creator address of NFT

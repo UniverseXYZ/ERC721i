@@ -106,9 +106,9 @@ library ERC721iCore {
       _assets[2].length == _assets[3].length &&
       _assets[3].length == _assets[4].length &&
       _assets[4].length == _assets[5].length,
-      "Invalid assets provided"
+      "Invalid assets"
     );
-    require(_currentVersion <= _assets[1].length, "Default version out of bounds");
+    require(_currentVersion <= _assets[1].length, "Invalid version");
     Storage storage ds = ERC721iStorage();
 
     ds._tokenIdCounter.increment();
@@ -116,12 +116,12 @@ library ERC721iCore {
     ds.editions[newTokenId] = _editions;
 
     Metadata memory metadata;
-    require (_metadataValues[0].length == _metadataValues[1].length, "Invalid metadata provided");
+    require (_metadataValues[0].length == _metadataValues[1].length, "Invalid metadata");
 
     uint256 propertyCount = _metadataValues[0].length;
     bool[] memory modifiables = new bool[](_metadataValues.length);
     for (uint256 i = 0; i < propertyCount; i++) {
-      modifiables[i] = (keccak256(abi.encodePacked((_metadataValues[2][i]))) == keccak256(abi.encodePacked(('1')))); // 1 is modifiable, 0 is permanent
+      modifiables[i] = (keccak256(abi.encodePacked(_metadataValues[2][i])) == keccak256(abi.encodePacked('1'))); // 1 is modifiable, 0 is permanent
     }
 
     metadata = Metadata({
@@ -151,10 +151,11 @@ library ERC721iCore {
     });
 
     for (uint256 i = 0; i < _editions; i++) {
-      _registerFees(newTokenId + i, _fees);
       emit TokenMinted(newTokenId + i, _assets[0][0], msg.sender, block.timestamp);
       ds.editionedPointers[newTokenId + i] = newTokenId;
     }
+
+    _registerFees(newTokenId, _fees);
   }
 
   function getTokenCreator(uint256 tokenId) public view returns (address) {
@@ -330,6 +331,7 @@ library ERC721iCore {
   function _registerFees(uint256 _tokenId, Fee[] memory _fees) internal {
     Storage storage ds = ERC721iStorage();
     require(_fees.length <= 10, "No more than 5 recipients");
+
     address[] memory recipients = new address[](_fees.length);
     uint256[] memory bps = new uint256[](_fees.length);
     uint256 sum = 0;
@@ -349,7 +351,8 @@ library ERC721iCore {
 
   function getFeeRecipients(uint256 id) public view returns (address payable[] memory) {
     Storage storage ds = ERC721iStorage();
-    Fee[] memory _fees = ds.fees[id];
+    uint256 tokenIdentifier = (ds.editionedPointers[id] > 0) ? ds.editionedPointers[id] : id;
+    Fee[] memory _fees = ds.fees[tokenIdentifier];
     address payable[] memory result = new address payable[](_fees.length);
     for (uint i = 0; i < _fees.length; i++) {
       result[i] = _fees[i].recipient;
@@ -359,7 +362,8 @@ library ERC721iCore {
 
   function getFeeBps(uint256 id) public view returns (uint[] memory) {
     Storage storage ds = ERC721iStorage();
-    Fee[] memory _fees = ds.fees[id];
+    uint256 tokenIdentifier = (ds.editionedPointers[id] > 0) ? ds.editionedPointers[id] : id;
+    Fee[] memory _fees = ds.fees[tokenIdentifier];
     uint[] memory result = new uint[](_fees.length);
     for (uint i = 0; i < _fees.length; i++) {
       if (_fees[i].decayType == 0) {
@@ -384,11 +388,13 @@ library ERC721iCore {
   }
 
   function royaltyInfo(uint256 tokenId, uint256 value) public view returns (address recipient, uint256 amount) {
-    address payable[] memory rec = getFeeRecipients(tokenId);
+    Storage storage ds = ERC721iStorage();
+    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    address payable[] memory rec = getFeeRecipients(tokenIdentifier);
     require(rec.length <= 1, "More than 1 royalty recipient");
 
     if (rec.length == 0) return (address(this), 0);
-    return (rec[0], getFeeBps(tokenId)[0] * value / 10000);
+    return (rec[0], getFeeBps(tokenIdentifier)[0] * value / 10000);
   }
 
   function withdraw(address _to, uint amount) public onlyDAO {

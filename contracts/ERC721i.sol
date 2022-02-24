@@ -8,12 +8,11 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./ERC721Consumable.sol";
-// import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "./interfaces/IUniverseSingularity.sol";
+import "./interfaces/IERC721i.sol";
 import "./ERC721iCore.sol";
 
-contract UniverseSingularity is ERC165, ERC721Consumable {
+contract ERC721i is ERC165, ERC721Consumable {
   using SafeMath for uint256;
   using Counters for Counters.Counter;
 
@@ -45,7 +44,7 @@ contract UniverseSingularity is ERC165, ERC721Consumable {
 
   function mint(
     uint256 _currentVersion,
-    string[][] memory _assets, // ordered lists: [[main assets], [backup assets], [asset titles], [asset descriptions], [additional assets], [text context]]
+    string[][] memory _assets,
     string[][] memory _metadataValues,
     string memory _licenseURI,
     ERC721iCore.Fee[] memory _fees,

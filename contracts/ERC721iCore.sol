@@ -236,96 +236,94 @@ library ERC721iCore {
 
   function tokenURI(uint256 tokenId) public view returns (string memory) {
     Storage storage ds = ERC721iStorage();
-
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
 
+    string memory encodedMetadata = '';
+    for (uint i = 0; i < ds.tokenData[tokenIdentifier].metadata.propertyCount; i++) {
+      encodedMetadata = string(abi.encodePacked(
+        encodedMetadata,
+        '{"trait_type":"',
+        ds.tokenData[tokenIdentifier].metadata.name[i],
+        '", "value":"',
+        ds.tokenData[tokenIdentifier].metadata.value[i],
+        '", "permanent":"',
+        ds.tokenData[tokenIdentifier].metadata.modifiable[i] ? 'false' : 'true',
+        '"}',
+        i == ds.tokenData[tokenIdentifier].metadata.propertyCount - 1 ? '' : ',')
+      );
+    }
 
-      string memory encodedMetadata = '';
-      for (uint i = 0; i < ds.tokenData[tokenIdentifier].metadata.propertyCount; i++) {
-        encodedMetadata = string(abi.encodePacked(
-          encodedMetadata,
-          '{"trait_type":"',
-          ds.tokenData[tokenIdentifier].metadata.name[i],
-          '", "value":"',
-          ds.tokenData[tokenIdentifier].metadata.value[i],
-          '", "permanent":"',
-          ds.tokenData[tokenIdentifier].metadata.modifiable[i] ? 'false' : 'true',
-          '"}',
-          i == ds.tokenData[tokenIdentifier].metadata.propertyCount - 1 ? '' : ',')
-        );
-      }
+    string memory assetsList = '';
+    for (uint i = 0; i < ds.tokenData[tokenIdentifier].assets.length; i++) {
+      assetsList = string(abi.encodePacked(
+        assetsList,
+        '{"name":"',
+        ds.tokenData[tokenIdentifier].assetTitles[i],
+        '", "description":"',
+        ds.tokenData[tokenIdentifier].assetDescriptions[i],
+        '", "primary_asset":"',
+        ds.tokenData[tokenIdentifier].assets[i],
+        '", "backup_asset":"',
+        ds.tokenData[tokenIdentifier].assetBackups[i],
+        '", "torrent":"',
+        ds.tokenData[tokenIdentifier].assetTorrentMagnet[i],
+        '", "default":"',
+        i == ds.tokenData[tokenIdentifier].currentVersion - 1 ? 'true' : 'false',
+        '"}',
+        i == ds.tokenData[tokenIdentifier].assets.length - 1 ? '' : ',')
+      );
+    }
 
-      string memory assetsList = '';
-      for (uint i = 0; i < ds.tokenData[tokenIdentifier].assets.length; i++) {
-        assetsList = string(abi.encodePacked(
-          assetsList,
-          '{"name":"',
-          ds.tokenData[tokenIdentifier].assetTitles[i],
-          '", "description":"',
-          ds.tokenData[tokenIdentifier].assetDescriptions[i],
-          '", "primary_asset":"',
-          ds.tokenData[tokenIdentifier].assets[i],
-          '", "backup_asset":"',
-          ds.tokenData[tokenIdentifier].assetBackups[i],
-          '", "torrent":"',
-          ds.tokenData[tokenIdentifier].assetTorrentMagnet[i],
-          '", "default":"',
-          i == ds.tokenData[tokenIdentifier].currentVersion - 1 ? 'true' : 'false',
-          '"}',
-          i == ds.tokenData[tokenIdentifier].assets.length - 1 ? '' : ',')
-        );
-      }
+    string memory additionalAssetsList = '';
+    for (uint i = 0; i < ds.tokenData[tokenIdentifier].additionalAssets.length; i++) {
+      additionalAssetsList = string(abi.encodePacked(
+        additionalAssetsList,
+        '{"context":"',
+        ds.tokenData[tokenIdentifier].additionalAssetsContext[i],
+        '", "asset":"',
+        ds.tokenData[tokenIdentifier].additionalAssets[i],
+        '"}',
+        i == ds.tokenData[tokenIdentifier].additionalAssets.length - 1 ? '' : ',')
+      );
+    }
 
-      string memory additionalAssetsList = '';
-      for (uint i = 0; i < ds.tokenData[tokenIdentifier].additionalAssets.length; i++) {
-        additionalAssetsList = string(abi.encodePacked(
-          additionalAssetsList,
-          '{"context":"',
-          ds.tokenData[tokenIdentifier].additionalAssetsContext[i],
-          '", "asset":"',
-          ds.tokenData[tokenIdentifier].additionalAssets[i],
-          '"}',
-          i == ds.tokenData[tokenIdentifier].additionalAssets.length - 1 ? '' : ',')
-        );
-      }
+    string memory animationAsset = "";
+    if (keccak256(abi.encodePacked(ds.tokenData[tokenIdentifier].iFrameAsset)) != keccak256(abi.encodePacked(""))) {
+      animationAsset = string(abi.encodePacked(', "animation_url": "', ds.tokenData[tokenIdentifier].iFrameAsset, '"'));
+    }
 
-      string memory animationAsset = "";
-      if (keccak256(abi.encodePacked(ds.tokenData[tokenIdentifier].iFrameAsset)) != keccak256(abi.encodePacked(""))) {
-        animationAsset = string(abi.encodePacked(', "animation_url": "', ds.tokenData[tokenIdentifier].iFrameAsset, '"'));
-      }
-
-      string memory encoded = string(
-        abi.encodePacked(
-          'data:application/json;base64,',
-          Base64.encode(
-            bytes(
-              abi.encodePacked(
-                '{"name":"',
-                ds.tokenData[tokenIdentifier].metadata.tokenName,
-                '", "description":"',
-                ds.tokenData[tokenIdentifier].metadata.tokenDescription,
-                '", "image": "',
-                ds.tokenData[tokenIdentifier].assets[ds.tokenData[tokenIdentifier].currentVersion - 1],
-                '", "license": "',
-                ds.tokenData[tokenIdentifier].licenseURI,
-                '", "attributes": [',
-                encodedMetadata,
-                ']',
-                ', "assets": [',
-                assetsList,
-                ']',
-                ', "additional_assets": [',
-                additionalAssetsList,
-                ']',
-                animationAsset,
-                '}'
-              )
+    string memory encoded = string(
+      abi.encodePacked(
+        'data:application/json;base64,',
+        Base64.encode(
+          bytes(
+            abi.encodePacked(
+              '{"name":"',
+              ds.tokenData[tokenIdentifier].metadata.tokenName,
+              '", "description":"',
+              ds.tokenData[tokenIdentifier].metadata.tokenDescription,
+              '", "image": "',
+              ds.tokenData[tokenIdentifier].assets[ds.tokenData[tokenIdentifier].currentVersion - 1],
+              '", "license": "',
+              ds.tokenData[tokenIdentifier].licenseURI,
+              '", "attributes": [',
+              encodedMetadata,
+              ']',
+              ', "assets": [',
+              assetsList,
+              ']',
+              ', "additional_assets": [',
+              additionalAssetsList,
+              ']',
+              animationAsset,
+              '}'
             )
           )
         )
-      );
+      )
+    );
 
-      return encoded;
+    return encoded;
   }
 
   function _registerFees(uint256 _tokenId, Fee[] memory _fees) internal {

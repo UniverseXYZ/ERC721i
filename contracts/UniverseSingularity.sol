@@ -17,7 +17,8 @@ contract UniverseSingularity is ERC165, ERC721Consumable {
   using SafeMath for uint256;
   using Counters for Counters.Counter;
 
-  constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+  function initialize(string memory name, string memory symbol) public initializer {
+    __ERC721_init(name, symbol);
     LibStorage.Storage storage ds = LibStorage.libStorage();
     ds.singularityAddress = address(this);
     ds.daoAddress = payable(msg.sender);

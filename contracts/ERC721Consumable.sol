@@ -1,10 +1,10 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.11;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "./interfaces/IERC721Consumable.sol";
 
-abstract contract ERC721Consumable is IERC721Consumable, ERC721 {
+abstract contract ERC721Consumable is IERC721Consumable, ERC721Upgradeable {
 
     // Mapping from token ID to consumer address
     mapping (uint256 => address) _tokenConsumers;
@@ -40,11 +40,11 @@ abstract contract ERC721Consumable is IERC721Consumable, ERC721 {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Upgradeable) returns (bool) {
         return interfaceId == type(IERC721Consumable).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address _from, address _to, uint256 _tokenId) internal virtual override (ERC721) {
+    function _beforeTokenTransfer(address _from, address _to, uint256 _tokenId) internal virtual override (ERC721Upgradeable) {
         super._beforeTokenTransfer(_from, _to, _tokenId);
 
         _changeConsumer(_from, address(0), _tokenId);

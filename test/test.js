@@ -17,6 +17,7 @@ describe("UniverseSingularity", async function() {
 
   const randomWallet = ethers.Wallet.createRandom().address;
   let deployInstance;
+  let deployInstance2;
 
   before(async () => {
     const LibStorage = await hre.ethers.getContractFactory("LibStorage");
@@ -29,11 +30,17 @@ describe("UniverseSingularity", async function() {
       },
     });
 
-    deployInstance = await UniverseSingularity.deploy(
-      collectionName,
-      collectionSymbol,
-    );
-    await deployInstance.deployed();
+    singularityInstance = await UniverseSingularity.deploy();
+    await singularityInstance.deployed();
+
+    const UniverseSingularityProxy = await ethers.getContractFactory("UniverseSingularityProxy");
+    proxyInstance = await UniverseSingularityProxy.deploy(singularityInstance.address, collectionName, collectionSymbol);
+    await proxyInstance.deployed();
+    deployInstance = singularityInstance.attach(proxyInstance.address)
+
+    const proxyInstance2 = await UniverseSingularityProxy.deploy(singularityInstance.address, collectionName, collectionSymbol);
+    await proxyInstance2.deployed();
+    deployInstance2 = singularityInstance.attach(proxyInstance2.address)
   });
   
   await describe("BASIC TOKEN TESTS", async function() {
@@ -268,5 +275,31 @@ describe("UniverseSingularity", async function() {
     //   const tokenData = metadata.animation;
     //   expect(await deployInstance.mint(tokenData.isOnChain, version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.fees)).to.be.reverted;
     // });
-  })
+  });
+
+  await describe("DEPLOY SECOND CONTRACT", async function() {
+    const feeTop = 5000;
+    const feeBottom = 1000;
+    const end1 = now + day * 4;
+    const end2 = now + day * 11;
+    const fees = [
+      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 1, feeTop, feeBottom, now, end1],
+      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 1, feeBottom, feeTop, now, end2]
+    ];
+
+    let tokenCounter = 0;
+
+    it("should mint one", async function() {
+      const tokenData = metadata.basic;
+      await deployInstance2.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions, deployInstance.address);
+      tokenCounter++;
+    });
+
+    it("should return tokenURI", async function() {
+      const data = await deployInstance2.tokenURI(tokenCounter);
+      const tokenJSON = base64toJSON(data);
+      // console.log(tokenJSON);
+      expect(tokenJSON.name).to.equal(metadata.basic.assets[0][0])
+    });
+  });
 });

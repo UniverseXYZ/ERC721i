@@ -49,12 +49,13 @@ contract ERC721i is ERC165, ERC721Consumable {
     string memory _licenseURI,
     ERC721iCore.Fee[] memory _fees,
     uint256 _editions,
+    bool _editioned,
     address _mintTo
   ) public {
     ERC721iCore.Storage storage ds = ERC721iCore.ERC721iStorage();
     require(_assets.length == 9, 'Invalid parameters');
 
-    ERC721iCore.mint(_currentVersion, _assets, _metadataValues, _licenseURI, _fees, _editions);
+    ERC721iCore.mint(_currentVersion, _assets, _metadataValues, _licenseURI, _fees, _editions, _editioned);
 
     address to = address(_mintTo) == address(0) ? msg.sender : _mintTo;
     for (uint256 i = 0; i < _editions; i++) {

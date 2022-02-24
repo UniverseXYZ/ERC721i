@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import './HelperFunctions.sol';
 import "hardhat/console.sol";
 import 'base64-sol/base64.sol';
 
@@ -54,6 +55,7 @@ library ERC721iCore {
     string[] additionalAssets; // Additional assets provided by minter
     string[] additionalAssetsContext; // Short text context per asset
     string iFrameAsset;
+    bool editioned;
   }
 
   struct Storage {
@@ -99,7 +101,8 @@ library ERC721iCore {
     string[][] memory _metadataValues,
     string memory _licenseURI,
     Fee[] memory _fees,
-    uint256 _editions
+    uint256 _editions,
+    bool _editioned
   ) external {
     require(
       _assets[1].length == _assets[2].length &&
@@ -147,7 +150,8 @@ library ERC721iCore {
       additionalAssetsContext: (_assets[7].length > 0) ? _assets[7] : new string[](0),
       iFrameAsset: _iFrameAsset,
       totalVersionCount: _assets[1].length,
-      currentVersion: _currentVersion
+      currentVersion: _currentVersion,
+      editioned: _editioned
     });
 
     for (uint256 i = 0; i < _editions; i++) {
@@ -292,6 +296,18 @@ library ERC721iCore {
       animationAsset = string(abi.encodePacked(', "animation_url": "', ds.tokenData[tokenIdentifier].iFrameAsset, '"'));
     }
 
+    uint256 edition = tokenId - tokenIdentifier;
+
+    string memory tokenName = ds.tokenData[tokenIdentifier].metadata.tokenName;
+    tokenName = string(abi.encodePacked(
+        tokenName,
+        ds.tokenData[tokenIdentifier].editioned ? ' #' : '',
+        ds.tokenData[tokenIdentifier].editioned ? HelperFunctions.uint2str(edition + 1) : '',
+        ds.tokenData[tokenIdentifier].editioned ? '/' : '',
+        ds.tokenData[tokenIdentifier].editioned ? HelperFunctions.uint2str(ds.editions[tokenIdentifier]) : ''
+      )
+    );
+
     string memory encoded = string(
       abi.encodePacked(
         'data:application/json;base64,',
@@ -299,7 +315,7 @@ library ERC721iCore {
           bytes(
             abi.encodePacked(
               '{"name":"',
-              ds.tokenData[tokenIdentifier].metadata.tokenName,
+              tokenName,
               '", "description":"',
               ds.tokenData[tokenIdentifier].metadata.tokenDescription,
               '", "image": "',

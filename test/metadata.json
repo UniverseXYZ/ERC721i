@@ -15,6 +15,7 @@
     "metadata": [[],[],[]],
     "licenseURI": "",
     "editions": 1,
+    "editionName": false,
     "fees": [
       ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 1, 5000, 1000, 1642023305, 1642133305],
       ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 1, 1000, 5000, 1642023305, 1642133305]
@@ -36,6 +37,7 @@
     "metadata": [[],[],[]],
     "licenseURI": "https://arweave.net/license",
     "editions": 1,
+    "editionName": false,
     "fees": [
       ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 0, 5000, 0, 0, 0],
       ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 0, 1000, 0, 0, 0]
@@ -128,6 +130,7 @@
     ],
     "licenseURI": "https://arweave.net/license",
     "editions": 50,
+    "editionName": true,
     "fees": [
       ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 0, 500, 0, 0, 0],
       ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 0, 300, 0, 0, 0]

@@ -4,7 +4,7 @@
 
 pragma solidity 0.8.11;
 
-import "../LibStorage.sol";
+import "../ERC721iCore.sol";
 import "./IERC721Consumable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
@@ -31,7 +31,7 @@ interface IPacks is IERC721Enumerable, IERC721Consumable {
     string[][] memory _assets,
     string[][] memory _metadataValues,
     string memory _licenseURI,
-    LibStorage.Fee[] memory _fees,
+    ERC721iCore.Fee[] memory _fees,
     uint256 _editions,
     address _mintTo
   ) external returns (uint256);

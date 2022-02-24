@@ -13,10 +13,10 @@ import 'base64-sol/base64.sol';
 
 /* TODO:
  * Owner protection for writable functions
- * Factory for creator control
+ * Editioned mints (in title)
  */
 
-library LibStorage {
+library ERC721iCore {
   using SafeMath for uint256;
   using Counters for Counters.Counter;
 
@@ -68,7 +68,7 @@ library LibStorage {
     Counters.Counter _tokenIdCounter;
   }
 
-  function libStorage() internal pure returns (Storage storage ds) {
+  function ERC721iStorage() internal pure returns (Storage storage ds) {
     bytes32 position = STORAGE_POSITION;
     assembly {
       ds.slot := position
@@ -89,7 +89,7 @@ library LibStorage {
   );
 
   modifier onlyDAO() {
-    require(msg.sender == libStorage().daoAddress, "Wrong address");
+    require(msg.sender == ERC721iStorage().daoAddress, "Wrong address");
     _;
   }
 
@@ -109,7 +109,7 @@ library LibStorage {
       "Invalid assets provided"
     );
     require(_currentVersion <= _assets[1].length, "Default version out of bounds");
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
 
     ds._tokenIdCounter.increment();
     uint256 newTokenId = ds._tokenIdCounter.current();
@@ -127,8 +127,8 @@ library LibStorage {
     metadata = Metadata({
       tokenName: _assets[0][0],
       tokenDescription: _assets[0][1],
-      name: (_metadataValues[1].length > 0) ? _metadataValues[1] : new string[](0),
-      value: (_metadataValues[2].length > 0) ? _metadataValues[2] : new string[](0),
+      name: (_metadataValues[0].length > 0) ? _metadataValues[0] : new string[](0),
+      value: (_metadataValues[1].length > 0) ? _metadataValues[1] : new string[](0),
       modifiable: modifiables,
       propertyCount: propertyCount
     });
@@ -158,12 +158,12 @@ library LibStorage {
   }
 
   function getTokenCreator(uint256 tokenId) public view returns (address) {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     return ds.tokenData[tokenId].tokenCreator;
   }
 
   function addAsset(uint256 tokenId, string[] memory assetData) public {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
     require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator of token can add new asset version');
     ds.tokenData[tokenIdentifier].assets.push(assetData[0]);
@@ -181,7 +181,7 @@ library LibStorage {
   }
 
   function addSecondaryAsset(uint256 tokenId, string[] memory assetData) public {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
     require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator of token can add new asset version');
     ds.tokenData[tokenIdentifier].additionalAssets.push(assetData[0]);
@@ -195,7 +195,7 @@ library LibStorage {
   }
 
   function changeVersion(uint256 tokenId, uint256 version) external {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
     require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can change asset version');
     require(version <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
@@ -204,13 +204,13 @@ library LibStorage {
   }
 
   function getCurrentVersion(uint256 tokenId) public view returns (uint256) {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
     return ds.tokenData[tokenIdentifier].currentVersion;
   }
 
   function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) external {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
     require(ds.tokenData[tokenIdentifier].metadata.modifiable[propertyIndex - 1], 'Field not editable');
     require(propertyIndex <= ds.tokenData[tokenIdentifier].metadata.propertyCount, 'Out of version bounds');
@@ -219,13 +219,13 @@ library LibStorage {
   }
 
   function licenseURI(uint256 tokenId) public view returns (string memory) {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
     return ds.tokenData[tokenIdentifier].licenseURI;
   }
 
   function updateTorrentMagnet(uint256 tokenId, uint256 assetIndex, string memory uri) external {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
     require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can update');
     require(assetIndex <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
@@ -234,7 +234,7 @@ library LibStorage {
   }
 
   function tokenURI(uint256 tokenId) public view returns (string memory) {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
 
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
 
@@ -328,7 +328,7 @@ library LibStorage {
   }
 
   function _registerFees(uint256 _tokenId, Fee[] memory _fees) internal {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     require(_fees.length <= 10, "No more than 5 recipients");
     address[] memory recipients = new address[](_fees.length);
     uint256[] memory bps = new uint256[](_fees.length);
@@ -348,7 +348,7 @@ library LibStorage {
   }
 
   function getFeeRecipients(uint256 id) public view returns (address payable[] memory) {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     Fee[] memory _fees = ds.fees[id];
     address payable[] memory result = new address payable[](_fees.length);
     for (uint i = 0; i < _fees.length; i++) {
@@ -358,7 +358,7 @@ library LibStorage {
   }
 
   function getFeeBps(uint256 id) public view returns (uint[] memory) {
-    Storage storage ds = libStorage();
+    Storage storage ds = ERC721iStorage();
     Fee[] memory _fees = ds.fees[id];
     uint[] memory result = new uint[](_fees.length);
     for (uint i = 0; i < _fees.length; i++) {

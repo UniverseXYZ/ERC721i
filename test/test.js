@@ -20,20 +20,20 @@ describe("UniverseSingularity", async function() {
   let deployInstance2;
 
   before(async () => {
-    const LibStorage = await hre.ethers.getContractFactory("LibStorage");
-    const libraryInstance = await LibStorage.deploy();
+    const ERC721iCore = await hre.ethers.getContractFactory("ERC721iCore");
+    const libraryInstance = await ERC721iCore.deploy();
     await libraryInstance.deployed();
 
     const UniverseSingularity = await ethers.getContractFactory("UniverseSingularity", {
       libraries: {
-        LibStorage: libraryInstance.address
+        ERC721iCore: libraryInstance.address
       },
     });
 
     singularityInstance = await UniverseSingularity.deploy();
     await singularityInstance.deployed();
 
-    const UniverseSingularityProxy = await ethers.getContractFactory("UniverseSingularityProxy");
+    const UniverseSingularityProxy = await ethers.getContractFactory("ERC721iCreator");
     proxyInstance = await UniverseSingularityProxy.deploy(singularityInstance.address, collectionName, collectionSymbol);
     await proxyInstance.deployed();
     deployInstance = singularityInstance.attach(proxyInstance.address)

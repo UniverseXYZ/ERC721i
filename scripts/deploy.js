@@ -1,15 +1,15 @@
 const hre = require("hardhat");
 
 async function main() {
-  const LibStorage = await hre.ethers.getContractFactory("LibStorage");
-  const libraryInstance = await LibStorage.deploy();
+  const ERC721iCore = await hre.ethers.getContractFactory("ERC721iCore");
+  const libraryInstance = await ERC721iCore.deploy();
   await libraryInstance.deployed();
 
   console.log("Library deployed to:", libraryInstance.address);
 
   const UniverseSingularity = await ethers.getContractFactory("UniverseSingularity", {
     libraries: {
-      LibStorage: libraryInstance.address
+      ERC721iCore: libraryInstance.address
     },
   });
 

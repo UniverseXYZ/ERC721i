@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/StorageSlot.sol";
 
-contract UniverseSingularityProxy is Proxy {
+contract ERC721iCreator is Proxy {
     constructor(address erc721coreAddress, string memory name, string memory symbol) {
         assert(_IMPLEMENTATION_SLOT == bytes32(uint256(keccak256("eip1967.proxy.implementation")) - 1));
         StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value = erc721coreAddress;

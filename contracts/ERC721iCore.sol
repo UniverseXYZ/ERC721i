@@ -9,12 +9,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import './HelperFunctions.sol';
-import "hardhat/console.sol";
 import 'base64-sol/base64.sol';
-
-/* TODO:
- * Owner protection for writable functions
- */
 
 library ERC721iCore {
   using SafeMath for uint256;

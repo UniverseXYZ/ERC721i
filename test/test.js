@@ -7,15 +7,14 @@ function base64toJSON(string) {
   return JSON.parse(Buffer.from(string.replace('data:application/json;base64,',''), 'base64').toString())
 }
 
+const now = Math.trunc(new Date().getTime() / 1000);
+const hour = 3600;
+const day = hour * 24;
+
 describe("UniverseSingularity", function() {
   const randomWallet = ethers.Wallet.createRandom().address;
-
   const collectionName = 'Universe Singularity Tokens';
   const collectionSymbol = 'XYZTOKEN';
-
-  let now = Math.trunc(new Date().getTime() / 1000);
-  const hour = 3600;
-  const day = hour * 24;
 
   async function deployContracts() {
     const blankFees = [];
@@ -64,7 +63,7 @@ describe("UniverseSingularity", function() {
     expect(data.animation_url).to.equal(tokenData.assets[8][0])
   });
 
-  it("should mint editioned NFTs", async function() {
+  it("mint editioned NFTs", async function() {
     const { deployInstance, blankFees } = await loadFixture(deployContracts);
     const tokenData = metadata.large;
 
@@ -98,7 +97,7 @@ describe("UniverseSingularity", function() {
   });
 
 
-  it("should set torrent magnet link", async function() {
+  it("set torrent magnet link", async function() {
     const { deployInstance, blankFees } = await loadFixture(deployContracts);
     const tokenData = metadata.large;
     const assetVersion = 3;
@@ -113,7 +112,7 @@ describe("UniverseSingularity", function() {
     expect(data.assets[assetVersion - 1].torrent).to.equal(magnetLink);
   });
 
-  it("should set new metadata", async function() {
+  it("set new metadata", async function() {
     const { deployInstance, blankFees } = await loadFixture(deployContracts);
     const tokenData = metadata.large;
     const propertyIndex = 3;
@@ -128,7 +127,7 @@ describe("UniverseSingularity", function() {
     expect(data.attributes[propertyIndex - 1].value).to.equal(value);
   });
 
-  it("should add new assets and in bulk", async function() {
+  it("add new assets and in bulk", async function() {
     const { deployInstance, blankFees } = await loadFixture(deployContracts);
     const tokenData = metadata.large;
     const assetData = [
@@ -169,7 +168,7 @@ describe("UniverseSingularity", function() {
   });
 
 
-  it("should add secondary asset", async function() {
+  it("add secondary asset", async function() {
     const { deployInstance, blankFees } = await loadFixture(deployContracts);
     const tokenData = metadata.large;
     const assetData = [

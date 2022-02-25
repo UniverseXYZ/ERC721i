@@ -14,7 +14,6 @@ import 'base64-sol/base64.sol';
 
 /* TODO:
  * Owner protection for writable functions
- * Editioned mints (in title)
  */
 
 library ERC721iCore {
@@ -170,7 +169,7 @@ library ERC721iCore {
   function addAsset(uint256 tokenId, string[] memory assetData) public {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator of token can add new asset version');
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
     ds.tokenData[tokenIdentifier].assets.push(assetData[0]);
     ds.tokenData[tokenIdentifier].assetBackups.push(assetData[1]);
     ds.tokenData[tokenIdentifier].assetTitles.push(assetData[2]);
@@ -188,7 +187,7 @@ library ERC721iCore {
   function addSecondaryAsset(uint256 tokenId, string[] memory assetData) public {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator of token can add new asset version');
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
     ds.tokenData[tokenIdentifier].additionalAssets.push(assetData[0]);
     ds.tokenData[tokenIdentifier].additionalAssetsContext.push(assetData[1]);
   }
@@ -202,7 +201,7 @@ library ERC721iCore {
   function changeVersion(uint256 tokenId, uint256 version) external {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can change asset version');
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
     require(version <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
     require(version >= 1, 'Out of version bounds');
     ds.tokenData[tokenIdentifier].currentVersion = version;
@@ -217,6 +216,7 @@ library ERC721iCore {
   function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) external {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
     require(ds.tokenData[tokenIdentifier].metadata.modifiable[propertyIndex - 1], 'Field not editable');
     require(propertyIndex <= ds.tokenData[tokenIdentifier].metadata.propertyCount, 'Out of version bounds');
     require(propertyIndex >= 1, 'Out of version bounds');
@@ -232,7 +232,7 @@ library ERC721iCore {
   function updateTorrentMagnet(uint256 tokenId, uint256 assetIndex, string memory uri) external {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can update');
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
     require(assetIndex <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
     require(assetIndex >= 1, 'Out of version bounds');
     ds.tokenData[tokenIdentifier].assetTorrentMagnet[assetIndex - 1] = uri;

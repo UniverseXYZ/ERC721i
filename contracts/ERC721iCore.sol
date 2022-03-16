@@ -39,6 +39,7 @@ library ERC721iCore {
     address tokenCreator; // User who minted
     Metadata metadata;
     string licenseURI; // Usage rights for token
+    string externalURL;
     string[] assets; // Each asset in array is a version
     string[] assetBackups; // Each backup upload can be toggled as main display asset (e.g. IPFS / ARWEAVE)
     string[] assetTitles; // Title of each core asset (optional)
@@ -94,6 +95,7 @@ library ERC721iCore {
     string[][] memory _assets, // ordered lists: [0: [main assets], 1: [backup assets], 2: [asset titles], 3: [asset descriptions], 4: [additional assets], 5: [text context], 6: [token name, desc], 7: [iFrame asset (optional)]]
     string[][] memory _metadataValues,
     string memory _licenseURI,
+    string memory _externalURL,
     Fee[] memory _fees,
     uint256 _editions,
     bool _editioned
@@ -135,6 +137,7 @@ library ERC721iCore {
       tokenCreator: msg.sender,
       metadata: metadata,
       licenseURI: _licenseURI,
+      externalURL: _externalURL,
       assets: _assets[1],
       assetBackups: _assets[2],
       assetTitles: _assets[3],
@@ -216,6 +219,13 @@ library ERC721iCore {
     require(propertyIndex <= ds.tokenData[tokenIdentifier].metadata.propertyCount, 'Out of version bounds');
     require(propertyIndex >= 1, 'Out of version bounds');
     ds.tokenData[tokenIdentifier].metadata.value[propertyIndex - 1] = value;
+  }
+
+  function updateExternalURL(uint256 tokenId, string memory url) external {
+    Storage storage ds = ERC721iStorage();
+    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
+    ds.tokenData[tokenIdentifier].externalURL = url;
   }
 
   function licenseURI(uint256 tokenId) public view returns (string memory) {
@@ -317,6 +327,8 @@ library ERC721iCore {
               ds.tokenData[tokenIdentifier].assets[ds.tokenData[tokenIdentifier].currentVersion - 1],
               '", "license": "',
               ds.tokenData[tokenIdentifier].licenseURI,
+              '", "external_url": "',
+              ds.tokenData[tokenIdentifier].externalURL,
               '", "attributes": [',
               encodedMetadata,
               ']',

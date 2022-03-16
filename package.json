@@ -1,6 +1,6 @@
 {
   "name": "erc721i",
-  "author": "Tim Kang / illestrater <tim@universe.xyz> (https://twitter.com/illestrater_)",
+  "author": "Tim Kang / illestrater (https://twitter.com/illestrater_)",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",

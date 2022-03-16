@@ -29,6 +29,7 @@ interface IERC721i is IERC721Enumerable {
     string[][] memory _assets,
     string[][] memory _metadataValues,
     string memory _licenseURI,
+    string memory _externalURL,
     ERC721iCore.Fee[] memory _fees,
     uint256 _editions
   ) external returns (uint256);
@@ -71,6 +72,11 @@ interface IERC721i is IERC721Enumerable {
   /// @param propertyIndex Index of metadata property
   /// @param value New value of metadata property
   function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) external;
+
+  /// @notice Allows creator to update metadata property if marked as changeable
+  /// @param tokenId NFT token ID
+  /// @param url New value of external url
+  function updateExternalURL(uint256 tokenId, string memory url) external;
 
   /// @notice Returns URI of license of NFT
   /// @param tokenId NFT token ID

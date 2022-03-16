@@ -46,7 +46,7 @@ describe("UniverseSingularity", function() {
   it("mint basic token", async function() {
     const { deployInstance, blankFees } = await loadFixture(deployContracts);
     const tokenData = metadata.basic;
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, blankFees, tokenData.editions, tokenData.editionName, deployInstance.address);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, deployInstance.address);
 
     const data = base64toJSON(await deployInstance.tokenURI(1));
     expect(data.name).to.equal(metadata.basic.assets[0][0])
@@ -56,7 +56,7 @@ describe("UniverseSingularity", function() {
     const { deployInstance, blankFees } = await loadFixture(deployContracts);
     const tokenData = metadata.animation;
 
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
     expect(await deployInstance.ownerOf(1)).to.equal(randomWallet);
 
     const data = base64toJSON(await deployInstance.tokenURI(1));
@@ -67,8 +67,8 @@ describe("UniverseSingularity", function() {
     const { deployInstance, blankFees } = await loadFixture(deployContracts);
     const tokenData = metadata.large;
 
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
 
     const data = base64toJSON(await deployInstance.tokenURI(1));
     expect(data.name).to.equal(`${ metadata.large.assets[0][0] } #${ 1 }/${ metadata.large.editions }`)
@@ -86,7 +86,7 @@ describe("UniverseSingularity", function() {
     const version = 8;
     const changedVersion = 3;
 
-    await deployInstance.mint(version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(version, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
     expect(await deployInstance.getCurrentVersion(1)).to.equal(version);
 
     await deployInstance.changeVersion(20, changedVersion);
@@ -103,7 +103,7 @@ describe("UniverseSingularity", function() {
     const assetVersion = 3;
     const magnetLink = 'magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c';
 
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
     await deployInstance.updateTorrentMagnet(1, assetVersion, magnetLink);
     await expect(deployInstance.updateTorrentMagnet(1, 11, magnetLink)).to.be.reverted;
     await expect(deployInstance.updateTorrentMagnet(1, 0, magnetLink)).to.be.reverted;
@@ -118,7 +118,7 @@ describe("UniverseSingularity", function() {
     const propertyIndex = 3;
     const value = 'Red';
 
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
     await deployInstance.updateMetadata(1, propertyIndex, value);
     await expect(deployInstance.updateMetadata(1, 0, value)).to.be.reverted;
     await expect(deployInstance.updateMetadata(1, 4, value)).to.be.reverted;
@@ -155,7 +155,7 @@ describe("UniverseSingularity", function() {
       ]
     ]
 
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
     await deployInstance.addAsset(1, assetData);
 
     let data = base64toJSON(await deployInstance.tokenURI(5));
@@ -188,7 +188,7 @@ describe("UniverseSingularity", function() {
     ]
 
 
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
     await deployInstance.addSecondaryAsset(1, assetData);
     let data = base64toJSON(await deployInstance.tokenURI(7));
     expect(data.additional_assets[data.additional_assets.length - 1].asset).to.equal('https://arweave.net/secondaryAssetNew')
@@ -204,8 +204,21 @@ describe("UniverseSingularity", function() {
     const { deployInstance, blankFees } = await loadFixture(deployContracts);
     const tokenData = metadata.animation;
 
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
     expect(await deployInstance.licenseURI(1)).to.equal(metadata.large.licenseURI);
+  });
+
+  it("update and return external URL", async function() {
+    const { deployInstance, blankFees } = await loadFixture(deployContracts);
+    const tokenData = metadata.animation;
+
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, blankFees, tokenData.editions, tokenData.editionName, randomWallet);
+    let data = base64toJSON(await deployInstance.tokenURI(1));
+    expect(data.external_url).to.equal(metadata.large.externalURL);
+
+    await deployInstance.updateExternalURL(1, 'https://pepe.xyz');
+    data = base64toJSON(await deployInstance.tokenURI(1));
+    expect(data.external_url).to.equal('https://pepe.xyz');
   });
 
   it("token with no royalty change", async function() {
@@ -218,7 +231,7 @@ describe("UniverseSingularity", function() {
       ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 0, feeBottom, 0, 0, 0]
     ]
 
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, fees, tokenData.editions, tokenData.editionName, randomWallet);
 
     await ethers.provider.send('evm_setNextBlockTimestamp', [now + day * 10]);
     await ethers.provider.send('evm_mine');
@@ -240,7 +253,7 @@ describe("UniverseSingularity", function() {
   
     const { deployInstance } = await loadFixture(deployContracts);
     const tokenData = metadata.basic;
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions, tokenData.editionName, deployInstance.address);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, fees, tokenData.editions, tokenData.editionName, deployInstance.address);
 
     await ethers.provider.send('evm_setNextBlockTimestamp', [now + day * 2]);
     await ethers.provider.send('evm_mine');
@@ -268,7 +281,7 @@ describe("UniverseSingularity", function() {
       ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 2, feeBottom, feeTop, now, end2]
     ];
 
-    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, fees, tokenData.editions, tokenData.editionName, randomWallet);
+    await deployInstance.mint(1, tokenData.assets, tokenData.metadata, tokenData.licenseURI, tokenData.externalURL, fees, tokenData.editions, tokenData.editionName, randomWallet);
 
     await ethers.provider.send('evm_setNextBlockTimestamp', [now + day * 15]);
     await ethers.provider.send('evm_mine');

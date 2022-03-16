@@ -47,6 +47,7 @@ contract ERC721i is ERC165, ERC721Consumable {
     string[][] memory _assets,
     string[][] memory _metadataValues,
     string memory _licenseURI,
+    string memory _externalURL,
     ERC721iCore.Fee[] memory _fees,
     uint256 _editions,
     bool _editioned,
@@ -55,7 +56,7 @@ contract ERC721i is ERC165, ERC721Consumable {
     ERC721iCore.Storage storage ds = ERC721iCore.ERC721iStorage();
     require(_assets.length == 9, 'Invalid parameters');
 
-    ERC721iCore.mint(_currentVersion, _assets, _metadataValues, _licenseURI, _fees, _editions, _editioned);
+    ERC721iCore.mint(_currentVersion, _assets, _metadataValues, _licenseURI, _externalURL, _fees, _editions, _editioned);
 
     address to = address(_mintTo) == address(0) ? msg.sender : _mintTo;
     for (uint256 i = 0; i < _editions; i++) {
@@ -103,6 +104,11 @@ contract ERC721i is ERC165, ERC721Consumable {
   function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) public {
     require(_exists(tokenId), "Nonexistent token");
     ERC721iCore.updateMetadata(tokenId, propertyIndex, value);
+  }
+
+  function updateExternalURL(uint256 tokenId, string memory url) public {
+    require(_exists(tokenId), "Nonexistent token");
+    ERC721iCore.updateExternalURL(tokenId, url);
   }
 
   function licenseURI(uint256 tokenId) public view returns (string memory) {

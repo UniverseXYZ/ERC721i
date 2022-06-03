@@ -222,10 +222,10 @@ library ERC721iCore {
   }
 
   function updateExternalURL(uint256 tokenId, string memory url) external {
-    Storage storage ds = ERC721iStorage();
-    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
-    ds.tokenData[tokenIdentifier].externalURL = url;
+    // Storage storage ds = ERC721iStorage();
+    // uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    // require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
+    // ds.tokenData[tokenIdentifier].externalURL = url;
   }
 
   function licenseURI(uint256 tokenId) public view returns (string memory) {
@@ -235,12 +235,12 @@ library ERC721iCore {
   }
 
   function updateTorrentMagnet(uint256 tokenId, uint256 assetIndex, string memory uri) external {
-    Storage storage ds = ERC721iStorage();
-    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
-    require(assetIndex <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
-    require(assetIndex >= 1, 'Out of version bounds');
-    ds.tokenData[tokenIdentifier].assetTorrentMagnet[assetIndex - 1] = uri;
+    // Storage storage ds = ERC721iStorage();
+    // uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
+    // require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
+    // require(assetIndex <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
+    // require(assetIndex >= 1, 'Out of version bounds');
+    // ds.tokenData[tokenIdentifier].assetTorrentMagnet[assetIndex - 1] = uri;
   }
 
   function tokenURI(uint256 tokenId) public view returns (string memory) {
@@ -296,10 +296,10 @@ library ERC721iCore {
       );
     }
 
-    string memory animationAsset = "";
-    if (keccak256(abi.encodePacked(ds.tokenData[tokenIdentifier].iFrameAsset)) != keccak256(abi.encodePacked(""))) {
-      animationAsset = string(abi.encodePacked(', "animation_url": "', ds.tokenData[tokenIdentifier].iFrameAsset, '"'));
-    }
+    // string memory animationAsset = "";
+    // if (keccak256(abi.encodePacked(ds.tokenData[tokenIdentifier].iFrameAsset)) != keccak256(abi.encodePacked(""))) {
+    //   animationAsset = string(abi.encodePacked(', "animation_url": "', ds.tokenData[tokenIdentifier].iFrameAsset, '"'));
+    // }
 
     uint256 edition = tokenId - tokenIdentifier;
 
@@ -313,6 +313,35 @@ library ERC721iCore {
       )
     );
 
+    // https://pgeje33bc2vb25ximp6w2so7h6r7sitkgqvx5agkvqj5fno6yq.arweave.net/eYiSb2EWqh126GP9bUnfP6P5Imo0K36Ay_qwT0rXexM/
+
+    // string memory base64 = Base64.encode(
+    //   bytes(
+    //     abi.encodePacked(
+    //       '{"name":"',
+    //       tokenName,
+    //       '", "description":"',
+    //       ds.tokenData[tokenIdentifier].metadata.tokenDescription,
+    //       '", "image": "',
+    //       ds.tokenData[tokenIdentifier].assets[ds.tokenData[tokenIdentifier].currentVersion - 1],
+    //       '", "license": "',
+    //       ds.tokenData[tokenIdentifier].licenseURI,
+    //       '", "external_url": "',
+    //       ds.tokenData[tokenIdentifier].externalURL,
+    //       '", "attributes": [',
+    //       encodedMetadata,
+    //       ']',
+    //       ', "assets": [',
+    //       assetsList,
+    //       ']',
+    //       ', "additional_assets": [',
+    //       additionalAssetsList,
+    //       ']',
+    //       '}'
+    //     )
+    //   )
+    // );
+
     string memory encoded = string(
       abi.encodePacked(
         'data:application/json;base64,',
@@ -325,6 +354,9 @@ library ERC721iCore {
               ds.tokenData[tokenIdentifier].metadata.tokenDescription,
               '", "image": "',
               ds.tokenData[tokenIdentifier].assets[ds.tokenData[tokenIdentifier].currentVersion - 1],
+              '", "animation_url": "',
+              'https://bbse5l2rfr7lzaxo5jnrry5ajjmgknnjznd3xh53anahq2vhdxdq.arweave.net/CGROr1EsfryC7upbGOOgSlhlNanLR7ufuwNAeGqnHcc/?metadata=',
+              'NzQWA3ya47IJiXykokGM6Wt5O4Nj2alm0ucMEUxiLylUTj8aXjJHQoof3peL5T3uXVto62eqIyyKL2k8RKPf8jP15VNetGJQUU7IbF05yt6lHN4JCV1K6LaDAwPG8kr4NwohNLVWGRiTYnliTwrSTvT8pLUtd5qHe560pwJy7W9H3wRHEiQA0WaHp4ElxdL0GKv8fyuGKNmTrohbtEGlcCixECsphmJzCfGFs76dsXxW76J8VQmqJsVD1rFuZo72c27Up1HSxfoUQ0BA05HVYlBi7nqz8Q7zhhQcKEPCK778lXzF1FqhdMdAH9HbTbk5UN1RvQB0eYHuRvwG7aOXWNu7y3G7fBYcTtpB2Jy2ES2XFwbZgletuflvLSGy4KacIaEJmiTqEDGFgwb6Tb178lV9n5TCqE3AhaO4clMptj16FtKzoJKxbyTrIR1lkdGhMeedLppIjgZaH31xkpaGQVzplzIkRMNKjyyNWZfrvpZzvUt5SlnGK2ff8FMKLstWUWJshrg98vveG7cwDJR7Bih0EtUOd8zxN6P809P8YPGBouwo9VhKjRPr2p1yuf1F0xaMjZIuCdmFnReUo8ZfMs7ucMG0SnbbV13E4cZxoRYHjkNE4DDHgeQetgcZ6RxG6BiUj3p4qRnRxzR9Vf3UdNDOevbUdxbbWyxoXlDPkVPAIU00SSUaESwVsNAvudQEPybBbuAAPEMDsHlBOKU8dP4ZAASXu7r4te3gWfhVAb69OpWNBT7ie4Fwhvo6zlYfIgIHKzWhh',
               '", "license": "',
               ds.tokenData[tokenIdentifier].licenseURI,
               '", "external_url": "',
@@ -338,7 +370,7 @@ library ERC721iCore {
               ', "additional_assets": [',
               additionalAssetsList,
               ']',
-              animationAsset,
+              // animationAsset,
               '}'
             )
           )

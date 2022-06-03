@@ -93,6 +93,7 @@ describe("UniverseSingularity", function() {
     expect(await deployInstance.getCurrentVersion(15)).to.equal(changedVersion);
 
     const data3 = base64toJSON(await deployInstance.tokenURI(11));
+    console.log(await deployInstance.tokenURI(11));
     expect(data3.image).to.equal(metadata.large.assets[1][2])
   });
 

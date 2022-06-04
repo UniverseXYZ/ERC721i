@@ -16,11 +16,12 @@ contract ERC721i is ERC165, ERC721Consumable {
   using SafeMath for uint256;
   using Counters for Counters.Counter;
 
-  function initialize(string memory name, string memory symbol) public initializer {
-    __ERC721_init(name, symbol);
+  function initialize(string memory name, string memory symbol) public initializerERC721A {
+    __ERC721A_init(name, symbol);
     ERC721iCore.Storage storage ds = ERC721iCore.ERC721iStorage();
     ds.singularityAddress = address(this);
     ds.daoAddress = payable(msg.sender);
+    _safeMint(msg.sender, 1);
   }
 
   bytes4 private constant _INTERFACE_ID_ROYALTIES_RARIBLE = 0xb7799584;
@@ -61,7 +62,7 @@ contract ERC721i is ERC165, ERC721Consumable {
     address to = address(_mintTo) == address(0) ? msg.sender : _mintTo;
     for (uint256 i = 0; i < _editions; i++) {
       uint256 newTokenId = ds._tokenIdCounter.current();
-      _mint(to, newTokenId);
+      _mint(to, _editions);
       if (i != (_editions - 1)) ds._tokenIdCounter.increment();
     }
   }

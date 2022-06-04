@@ -12,6 +12,7 @@
   "dependencies": {
     "@nomiclabs/hardhat-etherscan": "^2.1.6",
     "@openzeppelin/contracts": "^4.4.2",
+    "@openzeppelin/contracts-upgradeable": "^4.6.0",
     "base64-sol": "^1.0.1",
     "chai": "^4.3.4",
     "dotenv": "^10.0.0",

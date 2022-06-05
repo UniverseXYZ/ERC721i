@@ -58,7 +58,6 @@ describe("UniverseSingularity", function() {
       deployInstance.address
     );
 
-    console.log(await deployInstance.tokenURI(1));
     const data = base64toJSON(await deployInstance.tokenURI(1));
     expect(data.name).to.equal(metadata.basic.assets[0][0]);
   });
@@ -132,35 +131,6 @@ describe("UniverseSingularity", function() {
     );
   });
 
-  it("set torrent magnet link", async function () {
-    const { deployInstance, blankFees } = await loadFixture(deployContracts);
-    const tokenData = metadata.large;
-    const assetVersion = 3;
-    const magnetLink =
-      "magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c";
-
-    await deployInstance.mint(
-      tokenData.name,
-      tokenData.description,
-      tokenData.assetHash,
-      tokenData.metadata,
-      tokenData.licenseURI,
-      tokenData.externalURL,
-      blankFees,
-      tokenData.editions,
-      tokenData.editionName,
-      randomWallet
-    );
-    await deployInstance.updateTorrentMagnet(1, assetVersion, magnetLink);
-    await expect(deployInstance.updateTorrentMagnet(1, 11, magnetLink)).to.be
-      .reverted;
-    await expect(deployInstance.updateTorrentMagnet(1, 0, magnetLink)).to.be
-      .reverted;
-
-    const data = base64toJSON(await deployInstance.tokenURI(1));
-    expect(data.assets[assetVersion - 1].torrent).to.equal(magnetLink);
-  });
-
   it("set new metadata", async function () {
     const { deployInstance, blankFees } = await loadFixture(deployContracts);
     const tokenData = metadata.large;
@@ -207,15 +177,15 @@ describe("UniverseSingularity", function() {
     const newArweaveHash = "newArweaveHash";
     await deployInstance.addNewVersion(5, newArweaveHash);
 
-    let data = base64toJSON(await deployInstance.tokenURI(5));
+    let data = base64toJSON(await deployInstance.tokenURI(1));
     expect(data.animation_url).to.equal(
       `${baseURL}/?metadata=${newArweaveHash}`
     );
 
     const changedVersion = 1;
-    expect(await deployInstance.getCurrentVersion(5)).to.equal(2);
+    expect(await deployInstance.getCurrentVersion(2)).to.equal(2);
     await deployInstance.changeVersion(5, changedVersion);
-    expect(await deployInstance.getCurrentVersion(5)).to.equal(changedVersion);
+    expect(await deployInstance.getCurrentVersion(4)).to.equal(changedVersion);
   });
 
   it("return license URI", async function () {
@@ -261,6 +231,30 @@ describe("UniverseSingularity", function() {
     await deployInstance.updateExternalURL(1, "https://pepe.xyz");
     data = base64toJSON(await deployInstance.tokenURI(1));
     expect(data.external_url).to.equal("https://pepe.xyz");
+  });
+
+  it("update base URL", async function () {
+    const { deployInstance, blankFees } = await loadFixture(deployContracts);
+    const tokenData = metadata.animation;
+
+    await deployInstance.mint(
+      tokenData.name,
+      tokenData.description,
+      tokenData.assetHash,
+      tokenData.metadata,
+      tokenData.licenseURI,
+      tokenData.externalURL,
+      blankFees,
+      tokenData.editions,
+      tokenData.editionName,
+      randomWallet
+    );
+
+    await deployInstance.updateBaseURL("https://pepe.xyz");
+    data = base64toJSON(await deployInstance.tokenURI(1));
+    expect(data.animation_url).to.equal(
+      `https://pepe.xyz/?metadata=${tokenData.assetHash}`
+    );
   });
 
   it("token with no royalty change", async function () {

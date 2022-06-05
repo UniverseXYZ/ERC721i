@@ -15,7 +15,11 @@
       [],
       []
     ],
-    "metadata": [[], [], []],
+    "metadata": [
+      ["Rarity", "Score", "Color"],
+      ["Legedary", "100", "Blue"],
+      ["0", "0", "1"]
+    ],
     "licenseURI": "",
     "externalURL": "https://universe.xyz",
     "editions": 1,

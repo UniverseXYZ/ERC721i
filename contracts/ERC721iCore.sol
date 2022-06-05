@@ -189,6 +189,32 @@ library ERC721iCore {
     return ds.tokenData[tokenIdentifier].licenseURI;
   }
 
+  function getFeesList(uint256 tokenId) private view returns (string memory) {
+    Storage storage ds = ERC721iStorage();
+    string memory feesList = '';
+    for (uint i = 0; i < ds.fees[tokenId].length; i++) {
+      feesList = string(abi.encodePacked(
+        feesList,
+        '{"recipient":"0x',
+        HelperFunctions.toAsciiString(ds.fees[tokenId][i].recipient),
+        '", "decayType":"',
+        HelperFunctions.uint2str(ds.fees[tokenId][i].decayType),
+        '", "startValue":"',
+        HelperFunctions.uint2str(ds.fees[tokenId][i].value),
+        '", "endValue":"',
+        HelperFunctions.uint2str(ds.fees[tokenId][i].endValue),
+        '", "startTime":"',
+        HelperFunctions.uint2str(ds.fees[tokenId][i].startTime),
+        '", "endTime":"',
+        HelperFunctions.uint2str(ds.fees[tokenId][i].endTime),
+        '"}',
+        i == ds.fees[tokenId].length - 1 ? '' : ',')
+      );
+    }
+
+    return feesList;
+  }
+
   function tokenURI(uint256 tokenId) public view returns (string memory) {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
@@ -220,6 +246,22 @@ library ERC721iCore {
       )
     );
 
+    string memory assetsList = '';
+    for (uint i = 0; i < ds.tokenData[tokenIdentifier].assetHashes.length; i++) {
+      assetsList = string(abi.encodePacked(
+        assetsList,
+        '{"version":"',
+        HelperFunctions.uint2str(i + 1),
+        '", "assetHash":"',
+        ds.tokenData[tokenIdentifier].assetHashes[i],
+        '"}',
+        i == ds.tokenData[tokenIdentifier].assetHashes.length - 1 ? '' : ',')
+      );
+    }
+
+    string memory feesList = getFeesList(tokenIdentifier);
+    string memory version = HelperFunctions.uint2str(ds.tokenData[tokenIdentifier].currentVersion);
+
     string memory encoded = string(
       abi.encodePacked(
         "data:application/json;base64,",
@@ -243,10 +285,16 @@ library ERC721iCore {
               '", "attributes": [',
               encodedMetadata,
               "]",
-              ', "assets": ["',
-              ds.tokenData[tokenIdentifier].assetHashes[0],
-              '"]',
-              "}"
+              ', "assets": [',
+              assetsList,
+              ']',
+              ', "fees": [',
+              feesList,
+              ']',
+              ', "currentVersion": "',
+              version,
+              '", "standard": "ERC721i',
+              '"}'
             )
           )
         )

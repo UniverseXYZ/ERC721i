@@ -182,6 +182,11 @@ describe("UniverseSingularity", function() {
       `${baseURL}/?metadata=${newArweaveHash}`
     );
 
+    expect(data.assets[0].version).to.equal("1");
+    expect(data.assets[0].assetHash).to.equal(tokenData.assetHash);
+    expect(data.assets[1].version).to.equal("2");
+    expect(data.assets[1].assetHash).to.equal(newArweaveHash);
+
     const changedVersion = 1;
     expect(await deployInstance.getCurrentVersion(2)).to.equal(2);
     await deployInstance.changeVersion(5, changedVersion);
@@ -401,5 +406,7 @@ describe("UniverseSingularity", function() {
     data = await deployInstance.getFeeBps(1);
     expect(data[0].toNumber()).to.equal(feeBottom);
     expect(data[1].toNumber()).to.equal(feeTop);
+
+    data = base64toJSON(await deployInstance.tokenURI(1));
   });
 });

@@ -1,6 +1,9 @@
 {
   "basic": {
     "isOnChain": false,
+    "name": "token name",
+    "description": "token description",
+    "assetHash": "OuqbX5yWO2JvghxcXtbryp7g2-WiFiJd-Mlc1cyCEQs",
     "assets": [
       ["token name", "token description"],
       ["https://arweave.net/firstAsset"],
@@ -12,30 +15,56 @@
       [],
       []
     ],
-    "metadata": [[],[],[]],
+    "metadata": [[], [], []],
     "licenseURI": "",
     "externalURL": "https://universe.xyz",
     "editions": 1,
     "editionName": false,
     "fees": [
-      ["0x4B49652fBf286b3DA10E44442c38134d841159eF", 1, 5000, 1000, 1642023305, 1642133305],
-      ["0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283", 1, 1000, 5000, 1642023305, 1642133305]
+      [
+        "0x4B49652fBf286b3DA10E44442c38134d841159eF",
+        1,
+        5000,
+        1000,
+        1642023305,
+        1642133305
+      ],
+      [
+        "0xeEE5Eb24E7A0EA53B75a1b9aD72e7D20562f4283",
+        1,
+        1000,
+        5000,
+        1642023305,
+        1642133305
+      ]
     ]
   },
   "animation": {
     "isOnChain": true,
+    "name": "animation token",
+    "description": "This is the token description of the complex token",
+    "assetHash": "OuqbX5yWO2JvghxcXtbryp7g2-WiFiJd-Mlc1cyCEQs",
     "assets": [
-      ["animation_url token", "This is the token description of the complex token"],
+      [
+        "animation_url token",
+        "This is the token description of the complex token"
+      ],
       ["https://arweave.net/firstAsset", "https://arweave.net/secondAsset"],
       ["https://ipfs.io/backupAsset", "https://ipfs.io/backupAsset"],
       ["First Asset", "Second Asset"],
       ["First Description", "Second Description"],
-      ["magnet:?xt=urn:btih:firstMagnetURI", "magnet:?xt=urn:btih:secondMagnetURI"],
-      ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
+      [
+        "magnet:?xt=urn:btih:firstMagnetURI",
+        "magnet:?xt=urn:btih:secondMagnetURI"
+      ],
+      [
+        "https://arweave.net/additionalAsset1",
+        "https://arweave.net/additionalAsset2"
+      ],
       ["Additional Asset 1", "Additional Asset 2"],
       ["https://google.com"]
     ],
-    "metadata": [[],[],[]],
+    "metadata": [[], [], []],
     "licenseURI": "https://arweave.net/license",
     "externalURL": "https://universe.xyz",
     "editions": 1,
@@ -47,6 +76,9 @@
   },
   "large": {
     "isOnChain": true,
+    "name": "Complex token",
+    "description": "This is the token description of the complex token",
+    "assetHash": "OuqbX5yWO2JvghxcXtbryp7g2-WiFiJd-Mlc1cyCEQs",
     "assets": [
       ["Complex token", "This is the token description of the complex token"],
       [
@@ -109,26 +141,17 @@
         "",
         ""
       ],
-      ["https://arweave.net/additionalAsset1", "https://arweave.net/additionalAsset2"],
+      [
+        "https://arweave.net/additionalAsset1",
+        "https://arweave.net/additionalAsset2"
+      ],
       ["Additional Asset 1", "Additional Asset 2"],
       []
     ],
     "metadata": [
-      [
-        "Rarity",
-        "Score",
-        "Color"
-      ],
-      [
-        "Legedary",
-        "100",
-        "Blue"
-      ],
-      [
-        "0",
-        "0",
-        "1"
-      ]
+      ["Rarity", "Score", "Color"],
+      ["Legedary", "100", "Blue"],
+      ["0", "0", "1"]
     ],
     "licenseURI": "https://arweave.net/license",
     "externalURL": "https://universe.xyz",

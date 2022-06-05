@@ -2,17 +2,16 @@
 // Written by Tim Kang <> illestrater
 // Product by universe.xyz
 
-pragma solidity 0.8.11;
+pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import './HelperFunctions.sol';
-import 'base64-sol/base64.sol';
+import "./HelperFunctions.sol";
+import "base64-sol/base64.sol";
+import "hardhat/console.sol";
 
 library ERC721iCore {
   using SafeMath for uint256;
-  using Counters for Counters.Counter;
 
   bytes32 constant STORAGE_POSITION = keccak256("com.universe.singularity.storage");
 
@@ -39,29 +38,23 @@ library ERC721iCore {
     Metadata metadata;
     string licenseURI; // Usage rights for token
     string externalURL;
-    string[] assets; // Each asset in array is a version
-    string[] assetBackups; // Each backup upload can be toggled as main display asset (e.g. IPFS / ARWEAVE)
-    string[] assetTitles; // Title of each core asset (optional)
-    string[] assetDescriptions; // Description of each core asset (optional)
-    string[] assetTorrentMagnet; // Torrent magnet link (optional)
-    uint256 totalVersionCount; // Total number of existing states
-    uint256 currentVersion; // Current existing state
-    string[] additionalAssets; // Additional assets provided by minter
-    string[] additionalAssetsContext; // Short text context per asset
-    string iFrameAsset;
+    string[] assetHashes;
     bool editioned;
+    uint256 currentVersion;
+    uint256 totalVersionCount;
   }
 
   struct Storage {
     address singularityAddress;
     address payable daoAddress;
     bool daoInitialized;
+    string baseURL;
     mapping (uint256 => Fee[]) fees;
     mapping (uint256 => TokenData) tokenData;
     mapping (uint256 => uint256) editions; // Declares multiple editions for an NFT
     mapping (uint256 => uint256) editionedPointers; // Points to metadata of NFT editions
 
-    Counters.Counter _tokenIdCounter;
+    uint256 _tokenIdCounter;
   }
 
   function ERC721iStorage() internal pure returns (Storage storage ds) {
@@ -90,8 +83,9 @@ library ERC721iCore {
   }
 
   function mint(
-    uint256 _currentVersion,
-    string[][] memory _assets, // ordered lists: [0: [main assets], 1: [backup assets], 2: [asset titles], 3: [asset descriptions], 4: [additional assets], 5: [text context], 6: [token name, desc], 7: [iFrame asset (optional)]]
+    string memory _name,
+    string memory _description,
+    string memory _assetHash,
     string[][] memory _metadataValues,
     string memory _licenseURI,
     string memory _externalURL,
@@ -99,19 +93,10 @@ library ERC721iCore {
     uint256 _editions,
     bool _editioned
   ) external {
-    require(
-      _assets[1].length == _assets[2].length &&
-      _assets[2].length == _assets[3].length &&
-      _assets[3].length == _assets[4].length &&
-      _assets[4].length == _assets[5].length,
-      "Invalid assets"
-    );
-    require(_currentVersion <= _assets[1].length, "Invalid version");
     Storage storage ds = ERC721iStorage();
 
-    ds._tokenIdCounter.increment();
-    uint256 newTokenId = ds._tokenIdCounter.current();
-    ds.editions[newTokenId] = _editions;
+    ds._tokenIdCounter = ds._tokenIdCounter.add(1);
+    ds.editions[ds._tokenIdCounter] = _editions;
 
     Metadata memory metadata;
     require (_metadataValues[0].length == _metadataValues[1].length, "Invalid metadata");
@@ -119,43 +104,37 @@ library ERC721iCore {
     uint256 propertyCount = _metadataValues[0].length;
     bool[] memory modifiables = new bool[](_metadataValues.length);
     for (uint256 i = 0; i < propertyCount; i++) {
-      modifiables[i] = (keccak256(abi.encodePacked(_metadataValues[2][i])) == keccak256(abi.encodePacked('1'))); // 1 is modifiable, 0 is permanent
+      modifiables[i] = (keccak256(abi.encodePacked(_metadataValues[2][i])) == keccak256(abi.encodePacked("1"))); // 1 is modifiable, 0 is permanent
     }
 
     metadata = Metadata({
-      tokenName: _assets[0][0],
-      tokenDescription: _assets[0][1],
+      tokenName: _name,
+      tokenDescription: _description,
       name: (_metadataValues[0].length > 0) ? _metadataValues[0] : new string[](0),
       value: (_metadataValues[1].length > 0) ? _metadataValues[1] : new string[](0),
       modifiable: modifiables,
       propertyCount: propertyCount
     });
 
-    string memory _iFrameAsset = (_assets[8].length == 1) ? _assets[8][0] : "";
-    ds.tokenData[newTokenId] = TokenData({
+    string[] memory assetHash = new string[](1);
+    assetHash[0] = _assetHash;
+    ds.tokenData[ds._tokenIdCounter] = TokenData({
       tokenCreator: msg.sender,
       metadata: metadata,
       licenseURI: _licenseURI,
       externalURL: _externalURL,
-      assets: _assets[1],
-      assetBackups: _assets[2],
-      assetTitles: _assets[3],
-      assetDescriptions: _assets[4],
-      assetTorrentMagnet: _assets[5],
-      additionalAssets: (_assets[6].length > 0) ? _assets[6] : new string[](0),
-      additionalAssetsContext: (_assets[7].length > 0) ? _assets[7] : new string[](0),
-      iFrameAsset: _iFrameAsset,
-      totalVersionCount: _assets[1].length,
-      currentVersion: _currentVersion,
-      editioned: _editioned
+      editioned: _editioned,
+      assetHashes: assetHash,
+      currentVersion: 1,
+      totalVersionCount: 1
     });
 
     for (uint256 i = 0; i < _editions; i++) {
-      emit TokenMinted(newTokenId + i, _assets[0][0], msg.sender, block.timestamp);
-      ds.editionedPointers[newTokenId + i] = newTokenId;
+      emit TokenMinted(ds._tokenIdCounter + i, "Mint!", msg.sender, block.timestamp);
+      ds.editionedPointers[ds._tokenIdCounter + i] = ds._tokenIdCounter;
     }
 
-    _registerFees(newTokenId, _fees);
+    _registerFees(ds._tokenIdCounter, _fees);
   }
 
   function getTokenCreator(uint256 tokenId) public view returns (address) {
@@ -163,44 +142,21 @@ library ERC721iCore {
     return ds.tokenData[tokenId].tokenCreator;
   }
 
-  function addAsset(uint256 tokenId, string[] memory assetData) public {
+  function addNewVersion(uint256 tokenId, string memory assetHash) public {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
-    ds.tokenData[tokenIdentifier].assets.push(assetData[0]);
-    ds.tokenData[tokenIdentifier].assetBackups.push(assetData[1]);
-    ds.tokenData[tokenIdentifier].assetTitles.push(assetData[2]);
-    ds.tokenData[tokenIdentifier].assetDescriptions.push(assetData[3]);
-    ds.tokenData[tokenIdentifier].assetTorrentMagnet.push(assetData[4]);
+    require(getTokenCreator(tokenIdentifier) == msg.sender, "Only creator can modify");
+    ds.tokenData[tokenIdentifier].assetHashes.push(assetHash);
     ds.tokenData[tokenIdentifier].totalVersionCount++;
-  }
-
-  function bulkAddAsset(uint256 tokenId, string[][] memory assetData) external {
-    for (uint i = 0; i < assetData.length; i++) {
-      addAsset(tokenId, assetData[i]);
-    }
-  }
-
-  function addSecondaryAsset(uint256 tokenId, string[] memory assetData) public {
-    Storage storage ds = ERC721iStorage();
-    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
-    ds.tokenData[tokenIdentifier].additionalAssets.push(assetData[0]);
-    ds.tokenData[tokenIdentifier].additionalAssetsContext.push(assetData[1]);
-  }
-
-  function bulkAddSecondaryAsset(uint256 tokenId, string[][] memory assetData) external {
-    for (uint i = 0; i < assetData.length; i++) {
-      addSecondaryAsset(tokenId, assetData[i]);
-    }
+    ds.tokenData[tokenIdentifier].currentVersion = ds.tokenData[tokenIdentifier].totalVersionCount;
   }
 
   function changeVersion(uint256 tokenId, uint256 version) external {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
-    require(version <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
-    require(version >= 1, 'Out of version bounds');
+    require(getTokenCreator(tokenIdentifier) == msg.sender, "Only creator can modify");
+    require(version <= ds.tokenData[tokenIdentifier].totalVersionCount, "Out of version bounds");
+    require(version >= 1, "Out of version bounds");
     ds.tokenData[tokenIdentifier].currentVersion = version;
   }
 
@@ -213,17 +169,17 @@ library ERC721iCore {
   function updateMetadata(uint256 tokenId, uint256 propertyIndex, string memory value) external {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
-    require(ds.tokenData[tokenIdentifier].metadata.modifiable[propertyIndex - 1], 'Field not editable');
-    require(propertyIndex <= ds.tokenData[tokenIdentifier].metadata.propertyCount, 'Out of version bounds');
-    require(propertyIndex >= 1, 'Out of version bounds');
+    require(getTokenCreator(tokenIdentifier) == msg.sender, "Only creator can modify");
+    require(ds.tokenData[tokenIdentifier].metadata.modifiable[propertyIndex - 1], "Field not editable");
+    require(propertyIndex <= ds.tokenData[tokenIdentifier].metadata.propertyCount, "Out of version bounds");
+    require(propertyIndex >= 1, "Out of version bounds");
     ds.tokenData[tokenIdentifier].metadata.value[propertyIndex - 1] = value;
   }
 
   function updateExternalURL(uint256 tokenId, string memory url) external {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
+    require(getTokenCreator(tokenIdentifier) == msg.sender, "Only creator can modify");
     ds.tokenData[tokenIdentifier].externalURL = url;
   }
 
@@ -233,20 +189,11 @@ library ERC721iCore {
     return ds.tokenData[tokenIdentifier].licenseURI;
   }
 
-  function updateTorrentMagnet(uint256 tokenId, uint256 assetIndex, string memory uri) external {
-    Storage storage ds = ERC721iStorage();
-    uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
-    require(getTokenCreator(tokenIdentifier) == msg.sender, 'Only creator can modify');
-    require(assetIndex <= ds.tokenData[tokenIdentifier].totalVersionCount, 'Out of version bounds');
-    require(assetIndex >= 1, 'Out of version bounds');
-    ds.tokenData[tokenIdentifier].assetTorrentMagnet[assetIndex - 1] = uri;
-  }
-
   function tokenURI(uint256 tokenId) public view returns (string memory) {
     Storage storage ds = ERC721iStorage();
     uint256 tokenIdentifier = (ds.editionedPointers[tokenId] > 0) ? ds.editionedPointers[tokenId] : tokenId;
 
-    string memory encodedMetadata = '';
+    string memory encodedMetadata = "";
     for (uint i = 0; i < ds.tokenData[tokenIdentifier].metadata.propertyCount; i++) {
       encodedMetadata = string(abi.encodePacked(
         encodedMetadata,
@@ -255,49 +202,10 @@ library ERC721iCore {
         '", "value":"',
         ds.tokenData[tokenIdentifier].metadata.value[i],
         '", "permanent":"',
-        ds.tokenData[tokenIdentifier].metadata.modifiable[i] ? 'false' : 'true',
+        ds.tokenData[tokenIdentifier].metadata.modifiable[i] ? "false" : "true",
         '"}',
-        i == ds.tokenData[tokenIdentifier].metadata.propertyCount - 1 ? '' : ',')
+        i == ds.tokenData[tokenIdentifier].metadata.propertyCount - 1 ? "" : ",")
       );
-    }
-
-    string memory assetsList = '';
-    for (uint i = 0; i < ds.tokenData[tokenIdentifier].assets.length; i++) {
-      assetsList = string(abi.encodePacked(
-        assetsList,
-        '{"name":"',
-        ds.tokenData[tokenIdentifier].assetTitles[i],
-        '", "description":"',
-        ds.tokenData[tokenIdentifier].assetDescriptions[i],
-        '", "primary_asset":"',
-        ds.tokenData[tokenIdentifier].assets[i],
-        '", "backup_asset":"',
-        ds.tokenData[tokenIdentifier].assetBackups[i],
-        '", "torrent":"',
-        ds.tokenData[tokenIdentifier].assetTorrentMagnet[i],
-        '", "default":"',
-        i == ds.tokenData[tokenIdentifier].currentVersion - 1 ? 'true' : 'false',
-        '"}',
-        i == ds.tokenData[tokenIdentifier].assets.length - 1 ? '' : ',')
-      );
-    }
-
-    string memory additionalAssetsList = '';
-    for (uint i = 0; i < ds.tokenData[tokenIdentifier].additionalAssets.length; i++) {
-      additionalAssetsList = string(abi.encodePacked(
-        additionalAssetsList,
-        '{"context":"',
-        ds.tokenData[tokenIdentifier].additionalAssetsContext[i],
-        '", "asset":"',
-        ds.tokenData[tokenIdentifier].additionalAssets[i],
-        '"}',
-        i == ds.tokenData[tokenIdentifier].additionalAssets.length - 1 ? '' : ',')
-      );
-    }
-
-    string memory animationAsset = "";
-    if (keccak256(abi.encodePacked(ds.tokenData[tokenIdentifier].iFrameAsset)) != keccak256(abi.encodePacked(""))) {
-      animationAsset = string(abi.encodePacked(', "animation_url": "', ds.tokenData[tokenIdentifier].iFrameAsset, '"'));
     }
 
     uint256 edition = tokenId - tokenIdentifier;
@@ -305,16 +213,16 @@ library ERC721iCore {
     string memory tokenName = ds.tokenData[tokenIdentifier].metadata.tokenName;
     tokenName = string(abi.encodePacked(
         tokenName,
-        ds.tokenData[tokenIdentifier].editioned ? ' #' : '',
-        ds.tokenData[tokenIdentifier].editioned ? HelperFunctions.uint2str(edition + 1) : '',
-        ds.tokenData[tokenIdentifier].editioned ? '/' : '',
-        ds.tokenData[tokenIdentifier].editioned ? HelperFunctions.uint2str(ds.editions[tokenIdentifier]) : ''
+        ds.tokenData[tokenIdentifier].editioned ? " #" : "",
+        ds.tokenData[tokenIdentifier].editioned ? HelperFunctions.uint2str(edition + 1) : "",
+        ds.tokenData[tokenIdentifier].editioned ? "/" : "",
+        ds.tokenData[tokenIdentifier].editioned ? HelperFunctions.uint2str(ds.editions[tokenIdentifier]) : ""
       )
     );
 
     string memory encoded = string(
       abi.encodePacked(
-        'data:application/json;base64,',
+        "data:application/json;base64,",
         Base64.encode(
           bytes(
             abi.encodePacked(
@@ -323,22 +231,22 @@ library ERC721iCore {
               '", "description":"',
               ds.tokenData[tokenIdentifier].metadata.tokenDescription,
               '", "image": "',
-              ds.tokenData[tokenIdentifier].assets[ds.tokenData[tokenIdentifier].currentVersion - 1],
+              "https://openseauserdata.com/files/49280058c3289613d2735376f1d70faa.mp4",
+              '", "animation_url": "',
+              ds.baseURL,
+              "/?metadata=",
+              ds.tokenData[tokenIdentifier].assetHashes[ds.tokenData[tokenIdentifier].currentVersion - 1],
               '", "license": "',
               ds.tokenData[tokenIdentifier].licenseURI,
               '", "external_url": "',
               ds.tokenData[tokenIdentifier].externalURL,
               '", "attributes": [',
               encodedMetadata,
-              ']',
-              ', "assets": [',
-              assetsList,
-              ']',
-              ', "additional_assets": [',
-              additionalAssetsList,
-              ']',
-              animationAsset,
-              '}'
+              "]",
+              ', "assets": ["',
+              ds.tokenData[tokenIdentifier].assetHashes[0],
+              '"]',
+              "}"
             )
           )
         )

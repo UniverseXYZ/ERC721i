@@ -1,84 +1,83 @@
 const hre = require("hardhat");
+const metadata = require("../test/metadata.json");
 
 async function main() {
+  const baseURL =
+    "https://bbse5l2rfr7lzaxo5jnrry5ajjmgknnjznd3xh53anahq2vhdxdq.arweave.net/CGROr1EsfryC7upbGOOgSlhlNanLR7ufuwNAeGqnHcc";
+
   const ERC721iCore = await hre.ethers.getContractFactory("ERC721iCore");
   const libraryInstance = await ERC721iCore.deploy();
   await libraryInstance.deployed();
 
   console.log("Library deployed to:", libraryInstance.address);
 
-  const UniverseSingularity = await ethers.getContractFactory("UniverseSingularity", {
+  const ERC721i = await ethers.getContractFactory("ERC721i", {
     libraries: {
-      ERC721iCore: libraryInstance.address
+      ERC721iCore: libraryInstance.address,
     },
   });
 
-  singularityInstance = await UniverseSingularity.deploy();
-  await singularityInstance.deployed();
+  erc721iInstance = await ERC721i.deploy();
+  await erc721iInstance.deployed();
 
-  console.log("Singularity deployed to:", libraryInstance.address);
+  console.log("Singularity deployed to:", erc721iInstance.address);
 
-  const UniverseSingularityProxy = await ethers.getContractFactory("UniverseSingularityProxy");
-  const collectionName = 'Universe Singularity Tokens';
-  const collectionSymbol = 'XYZTOKEN';
-  const deployArgs = [singularityInstance.address, collectionName, collectionSymbol]
-
-  proxyInstance = await UniverseSingularityProxy.deploy(...deployArgs);
+  const CreatorProxy = await ethers.getContractFactory("ILLEST");
+  proxyInstance = await CreatorProxy.deploy(erc721iInstance.address, baseURL);
   await proxyInstance.deployed();
+  deployInstance = erc721iInstance.attach(proxyInstance.address);
 
-  console.log("Contract 1 deployed to:", proxyInstance.address);
+  console.log("Creator contract deployed", proxyInstance.address);
 
-  const collectionName2 = 'My Personal Collection';
-  const collectionSymbol2 = 'ILLESTRATER';
-  const deployArgs2 = [singularityInstance.address, collectionName2, collectionSymbol2]
-  const proxyInstance2 = await UniverseSingularityProxy.deploy(...deployArgs2);
-  await proxyInstance2.deployed();
-
-  console.log("Contract 2 deployed to:", proxyInstance2.address);
-
-  await new Promise(resolve => setTimeout(resolve, 50000));
+  await new Promise((resolve) => setTimeout(resolve, 50000));
 
   try {
     await hre.run("verify:verify", {
       address: libraryInstance.address,
     });
   } catch (e) {
-    console.log('got error', e);
+    console.log("got error", e);
   }
 
-  console.log('Library verified');
+  console.log("Library verified");
 
   try {
     await hre.run("verify:verify", {
-      address: singularityInstance.address,
+      address: erc721iInstance.address,
     });
   } catch (e) {
-    console.log('got error', e);
+    console.log("got error", e);
   }
 
-  console.log('Singularity verified');
+  console.log("ERC721i verified");
 
   try {
     await hre.run("verify:verify", {
       address: proxyInstance.address,
-      constructorArguments: deployArgs,
+      constructorArguments: [erc721iInstance.address, baseURL],
+      contract: "contracts/CreatorSample.sol:ILLEST",
     });
   } catch (e) {
-    console.log('got error', e);
+    console.log("got error", e);
   }
 
-  console.log('Proxy1 verified');
+  console.log("Creator contract verified");
 
-  try {
-    await hre.run("verify:verify", {
-      address: proxyInstance2.address,
-      constructorArguments: deployArgs2,
-    });
-  } catch (e) {
-    console.log('got error', e);
-  }
+  const tokenData = metadata.basic;
+  await deployInstance.mint(
+    tokenData.name,
+    tokenData.description,
+    tokenData.assetHash,
+    tokenData.metadata,
+    tokenData.licenseURI,
+    tokenData.externalURL,
+    tokenData.fees,
+    tokenData.editions,
+    tokenData.editionName,
+    "0x4B49652fBf286b3DA10E44442c38134d841159eF"
+  );
 
-  console.log('Proxy2 verified');
+  console.log("Token Minted!");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

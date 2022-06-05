@@ -47,5 +47,5 @@ import "./ERC721iCreator.sol";
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 contract ILLEST is ERC721iCreator {
-    constructor(address universeSingularity) ERC721iCreator(universeSingularity, "illestrater", "ILLEST") {}
+    constructor(address universeSingularity, string memory baseURL) ERC721iCreator(universeSingularity, "illestrater", "ILLEST", baseURL) {}
 }

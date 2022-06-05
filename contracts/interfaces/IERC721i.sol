@@ -17,16 +17,18 @@ interface IERC721i is IERC721Enumerable {
   function transferDAOownership(address payable _daoAddress) external;
 
   /// @notice Creates a new collection / drop (first collection is created via constructor)
-  /// @param _currentVersion Index (starting from 1) of default asset to show
-  /// @param _assets Asset data [[main assets], [backup assets], [asset titles], [asset descriptions], [additional assets], [text context]]
+  /// @param _name Token name
+  /// @param _description Token description
+  /// @param _assetHash Asset data arweave hash
   /// @param _metadataValues Property values
   /// @param _licenseURI License URI of NFT
   /// @param _fees Royalty parameters [[address, variable type, start BPS, end BPS, start blocktime, end blocktime]]
   /// above variable types: 0 - no decay, 1 - linear, 2 - timestamp change / expiration
   /// @param _editions Number of identical NFTs to mint
   function mint(
-    uint256 _currentVersion,
-    string[][] memory _assets,
+    string memory _name,
+    string memory _description,
+    string memory _assetHash,
     string[][] memory _metadataValues,
     string memory _licenseURI,
     string memory _externalURL,
@@ -40,23 +42,8 @@ interface IERC721i is IERC721Enumerable {
 
   /// @notice Allows creator of NFT to add an asset
   /// @param tokenId NFT token ID
-  /// @param assetData Asset data [main asset, backup asset, asset title, asset description]
-  function addAsset(uint256 tokenId, string[] memory assetData) external;
-
-  /// @notice Allows creator of NFT to add multiple assets
-  /// @param tokenId NFT token ID
-  /// @param assetData Asset data [[main asset, backup asset, asset title, asset description], ...]
-  function bulkAddAsset(uint256 tokenId, string[][] memory assetData) external;
-
-  /// @notice Allows creator of NFT to add another secondary asset
-  /// @param tokenId NFT token ID
-  /// @param assetData Asset data [asset, asset context]
-  function addSecondaryAsset(uint256 tokenId, string[] memory assetData) external;
-
-  /// @notice Allows creator of NFT to add multiple secondary assets
-  /// @param tokenId NFT token ID
-  /// @param assetData Asset data [[asset, asset context], ...]
-  function bulkAddSecondaryAsset(uint256 tokenId, string[][] memory assetData) external;
+  /// @param assetHash Asset data hash
+  function addNewVersion(uint256 tokenId, string memory assetHash) external;
 
   /// @notice Allows creator or owner of NFT to change default displaying asset
   /// @param tokenId NFT token ID

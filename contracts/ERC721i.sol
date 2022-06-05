@@ -16,11 +16,13 @@ contract ERC721i is ERC165, ERC721Consumable {
   using SafeMath for uint256;
   using Counters for Counters.Counter;
 
-  function initialize(string memory name, string memory symbol) public initializer {
-    __ERC721_init(name, symbol);
+  function initialize(string memory name, string memory symbol, string memory baseURL) public initializerERC721A {
+    __ERC721A_init(name, symbol);
     ERC721iCore.Storage storage ds = ERC721iCore.ERC721iStorage();
     ds.singularityAddress = address(this);
     ds.daoAddress = payable(msg.sender);
+    ds.baseURL = baseURL;
+    _safeMint(msg.sender, 1);
   }
 
   bytes4 private constant _INTERFACE_ID_ROYALTIES_RARIBLE = 0xb7799584;
@@ -42,9 +44,15 @@ contract ERC721i is ERC165, ERC721Consumable {
     ds.daoInitialized = true;
   }
 
+  function updateBaseURL(string memory _baseURL) public onlyDAO {
+    ERC721iCore.Storage storage ds = ERC721iCore.ERC721iStorage();
+    ds.baseURL = _baseURL;
+  }
+
   function mint(
-    uint256 _currentVersion,
-    string[][] memory _assets,
+    string memory _name,
+    string memory _description,
+    string memory _assetHash,
     string[][] memory _metadataValues,
     string memory _licenseURI,
     string memory _externalURL,
@@ -54,16 +62,13 @@ contract ERC721i is ERC165, ERC721Consumable {
     address _mintTo
   ) public {
     ERC721iCore.Storage storage ds = ERC721iCore.ERC721iStorage();
-    require(_assets.length == 9, 'Invalid parameters');
 
-    ERC721iCore.mint(_currentVersion, _assets, _metadataValues, _licenseURI, _externalURL, _fees, _editions, _editioned);
+    ERC721iCore.mint(_name, _description, _assetHash, _metadataValues, _licenseURI, _externalURL, _fees, _editions, _editioned);
 
     address to = address(_mintTo) == address(0) ? msg.sender : _mintTo;
-    for (uint256 i = 0; i < _editions; i++) {
-      uint256 newTokenId = ds._tokenIdCounter.current();
-      _mint(to, newTokenId);
-      if (i != (_editions - 1)) ds._tokenIdCounter.increment();
-    }
+    ds._tokenIdCounter = ds._tokenIdCounter + _editions - 1;
+
+    _mint(to, _editions);
   }
 
   function getTokenCreator(uint256 tokenId) public view returns (address) {
@@ -71,24 +76,9 @@ contract ERC721i is ERC165, ERC721Consumable {
     return ERC721iCore.ERC721iStorage().tokenData[tokenId].tokenCreator;
   }
 
-  function addAsset(uint256 tokenId, string[] memory assetData) public {
+  function addNewVersion(uint256 tokenId, string memory assetHash) public {
     require(_exists(tokenId), "Nonexistent token");
-    ERC721iCore.addAsset(tokenId, assetData);
-  }
-
-  function bulkAddAsset(uint256 tokenId, string[][] memory assetData) public {
-    require(_exists(tokenId), "Nonexistent token");
-    ERC721iCore.bulkAddAsset(tokenId, assetData);
-  }
-
-  function addSecondaryAsset(uint256 tokenId, string[] memory assetData) public {
-    require(_exists(tokenId), "Nonexistent token");
-    ERC721iCore.addSecondaryAsset(tokenId, assetData);
-  }
-
-  function bulkAddSecondaryAsset(uint256 tokenId, string[][] memory assetData) public {
-    require(_exists(tokenId), "Nonexistent token");
-    ERC721iCore.bulkAddSecondaryAsset(tokenId, assetData);
+    ERC721iCore.addNewVersion(tokenId, assetHash);
   }
 
   function changeVersion(uint256 tokenId, uint256 version) public {
@@ -114,11 +104,6 @@ contract ERC721i is ERC165, ERC721Consumable {
   function licenseURI(uint256 tokenId) public view returns (string memory) {
     require(_exists(tokenId), "Nonexistent token");
     return ERC721iCore.licenseURI(tokenId);
-  }
-
-  function updateTorrentMagnet(uint256 tokenId, uint256 assetIndex, string memory uri) public { 
-    require(_exists(tokenId), "Nonexistent token");
-    ERC721iCore.updateTorrentMagnet(tokenId, assetIndex, uri);
   }
 
   function tokenURI(uint256 tokenId) public view override returns (string memory) {
